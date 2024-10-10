@@ -1,3 +1,11 @@
-from django.shortcuts import render
+from rest_framework.mixins import CreateModelMixin, UpdateModelMixin, RetrieveModelMixin
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
+from jwt_registration.models import User
 
-# Create your views here.
+from jwt_registration.serializers import UserSerializer
+
+
+class RegistrationAPIViewSet(GenericViewSet, CreateModelMixin, UpdateModelMixin, RetrieveModelMixin):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
