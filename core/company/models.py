@@ -7,8 +7,7 @@ class Company(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
     users = models.ManyToManyField(
-        User,
-        related_name='companies',
+        User, related_name='companies',
         help_text=_('connection with User')
     )
 
@@ -29,7 +28,7 @@ class Position(models.Model):
         MINIMUM_ACCESS = 3, _('Executing tasks')
         OBSERVE = 4, _('Observer')
 
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, default=_('Owner'))
     description = models.TextField(null=True, blank=True)
     access_weight = models.PositiveSmallIntegerField(
         choices=WeightChoices.choices,
@@ -37,26 +36,23 @@ class Position(models.Model):
         help_text=_("access level for the position")
     )
     company = models.ForeignKey(
-        Company,
-        on_delete=models.CASCADE,
+        Company, on_delete=models.CASCADE,
         related_name='positions',
         help_text=_('connection with Company')
     )
     users = models.ManyToManyField(
-        User,
-        related_name='positions',
+        User, related_name='positions',
         help_text=_('connection with User')
     )
     projects = models.ManyToManyField(
-        'Project',
-        through='ProjectPosition',
+        'Project', through='ProjectPosition',
         related_name='positions',
         help_text=_('connection with Project')
     )
 
     class Meta:
         verbose_name = _("Position")
-        verbose_name_plural = _("Project")
+        verbose_name_plural = _("Positions")
         ordering = ['access_weight']
 
     def __str__(self):
@@ -92,8 +88,7 @@ class Project(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
     company = models.ForeignKey(
-        Company,
-        on_delete=models.PROTECT,
+        Company, on_delete=models.PROTECT,
         related_name='projects',
         help_text=_('connection with Company')
     )
