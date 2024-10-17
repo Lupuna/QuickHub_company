@@ -4,7 +4,7 @@ from company.models import Company, Position
 
 
 @receiver(m2m_changed, sender=Company.users.through)
-def create_company(sender, instance, action, **kwargs):
+def create_company_position(sender, instance, action, **kwargs):
     if action == 'post_add':
         users_to_add = kwargs.get('pk_set', [])
         if users_to_add:

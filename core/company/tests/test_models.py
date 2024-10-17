@@ -102,7 +102,7 @@ class PositionModelTestCase(TestCase):
         self.assertEqual(Position._meta.verbose_name, _("Position"))
 
     def test_meta_verbose_name_plural(self):
-        self.assertEqual(Position._meta.verbose_name_plural, _("Project"))
+        self.assertEqual(Position._meta.verbose_name_plural, _("Positions"))
 
     def test_meta_ordering(self):
         self.assertEqual(Position._meta.ordering, ['access_weight'])
