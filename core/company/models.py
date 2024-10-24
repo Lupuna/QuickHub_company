@@ -65,11 +65,11 @@ class ProjectPosition(models.Model):
         PARTIAL_ACCESS = 2, _('Executing and assigning tasks')
         MINIMUM_ACCESS = 3, _('Executing tasks')
         OBSERVE = 4, _('Observer')
+        STANDARD = 5, _('Standard')
 
     project_access_weight = models.PositiveSmallIntegerField(
         choices=WeightChoices.choices,
-        null=True,
-        blank=True,
+        default=WeightChoices.STANDARD,
         help_text=_("access level for the position")
     )
 

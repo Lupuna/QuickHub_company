@@ -168,6 +168,7 @@ class ProjectPositionTestCase(TestCase):
             (2, _('Executing and assigning tasks')),
             (3, _('Executing tasks')),
             (4, _('Observer')),
+            (5, _('Standard')),
         ]
         actual_choices = ProjectPosition.WeightChoices.choices
         self.assertEqual(actual_choices, expected_choices)
