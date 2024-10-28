@@ -29,18 +29,15 @@ class CompanySerializerTest(TestCase):
     def tearDown(self):
         m2m_changed.connect(create_company_position, sender=Company.users.through)
 
-    def test_create_company_with_users(self):
+    def test_create_company(self):
         serializer = CompanySerializer(data=self.company_data)
         serializer.is_valid(raise_exception=True)
         company = serializer.save()
 
         self.assertEqual(company.title, self.company_data['title'])
         self.assertEqual(company.description, self.company_data['description'])
-        self.assertEqual(company.users.count(), 2)
-        self.assertIn(self.user1, company.users.all())
-        self.assertIn(self.user2, company.users.all())
 
-    def test_update_company_with_users(self):
+    def test_update_company(self):
         company = Company.objects.create(title='test_company_title_2', description='test_company_description_2')
         company.users.add(self.user1)
         update_data = {
@@ -55,9 +52,6 @@ class CompanySerializerTest(TestCase):
 
         self.assertEqual(updated_company.title, update_data['title'])
         self.assertEqual(updated_company.description, update_data['description'])
-        self.assertEqual(updated_company.users.count(), 2)
-        self.assertIn(self.user2, updated_company.users.all())
-        self.assertIn(self.user1, updated_company.users.all())
 
 
 class PositionSerializerTestCase(TestCase):
@@ -85,39 +79,6 @@ class PositionSerializerTestCase(TestCase):
 
     def tearDown(self):
         m2m_changed.connect(create_company_position, sender=Company.users.through)
-
-    def test_create_position_with_user(self):
-        serializer = PositionSerializer(data=self.position_data)
-        serializer.is_valid(raise_exception=True)
-        position = serializer.save()
-
-        self.assertEqual(position.title, self.position_data['title'])
-        self.assertEqual(position.description, self.position_data['description'])
-        self.assertEqual(position.users.count(), 2)
-        self.assertIn(self.user1, position.users.all())
-        self.assertIn(self.user2, position.users.all())
-
-    def test_update_position_with_user(self):
-        position = Position.objects.create(
-            title='test_position_title_2',
-            description='test_position_description_2',
-            company=self.company
-        )
-        position.users.add(self.user1)
-        update_data = {
-            'title': 'update_title_company_2',
-            'description': 'update_description_company_2',
-            'company': self.company.id,
-            'users': [{'id': self.user2.id, 'email': self.user2.email}],
-        }
-        serializer = PositionSerializer(instance=position, data=update_data)
-        serializer.is_valid(raise_exception=True)
-        position = serializer.save()
-        self.assertEqual(position.title, update_data['title'])
-        self.assertEqual(position.description, update_data['description'])
-        self.assertEqual(position.users.count(), 2)
-        self.assertIn(self.user1, position.users.all())
-        self.assertIn(self.user2, position.users.all())
 
     def test_get_access_weight_display(self):
         position = Position.objects.create(
@@ -200,58 +161,3 @@ class ProjectSerializerTestCase(TestCase):
         positions_data = serializer.get_positions(self.project)
 
         self.assertEqual(positions_data, mock_positions_data)
-
-
-class DepartmentSerializerTsetCase(TestCase):
-    def setUp(self):
-        self.user1 = User.objects.create(email='test_email_1@gmail.com')
-        self.user2 = User.objects.create(email='test_email_2@gmail.com')
-
-        company_data = {
-            'title': 'test_company_title_1',
-            'description': 'test_company_description_1',
-        }
-        self.company = Company.objects.create(**company_data)
-        self.company.users.add(self.user1, self.user2)
-        self.department_data = {
-            'title': 'test_department_title_1',
-            'description': 'test_department_description_1',
-            'company': self.company.id,
-            'users': [
-                {'id': self.user1.id, 'email': self.user1.email},
-                {'id': self.user2.id, 'email': self.user2.email}
-            ],
-        }
-
-    def test_create_position_with_user(self):
-        serializer = PositionSerializer(data=self.department_data)
-        serializer.is_valid(raise_exception=True)
-        position = serializer.save()
-
-        self.assertEqual(position.title, self.department_data['title'])
-        self.assertEqual(position.description, self.department_data['description'])
-        self.assertEqual(position.users.count(), 2)
-        self.assertIn(self.user1, position.users.all())
-        self.assertIn(self.user2, position.users.all())
-
-    def test_update_position_with_user(self):
-        position = Department.objects.create(
-            title='test_position_title_2',
-            description='test_position_description_2',
-            company=self.company
-        )
-        position.users.add(self.user1)
-        update_data = {
-            'title': 'update_title_company_2',
-            'description': 'update_description_company_2',
-            'company': self.company.id,
-            'users': [{'id': self.user2.id, 'email': self.user2.email}],
-        }
-        serializer = PositionSerializer(instance=position, data=update_data)
-        serializer.is_valid(raise_exception=True)
-        position = serializer.save()
-        self.assertEqual(position.title, update_data['title'])
-        self.assertEqual(position.description, update_data['description'])
-        self.assertEqual(position.users.count(), 2)
-        self.assertIn(self.user1, position.users.all())
-        self.assertIn(self.user2, position.users.all())

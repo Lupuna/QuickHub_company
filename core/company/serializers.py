@@ -1,41 +1,19 @@
 from rest_framework import serializers
 from jwt_registration.serializers import UserSerializer
 from company.models import Company, Position, Project, Department
+from company.mixins import UserHandlingMixin
 from jwt_registration.models import User
 
 
-class CompanySerializer(serializers.ModelSerializer):
+class CompanySerializer(UserHandlingMixin, serializers.ModelSerializer):
     users = UserSerializer(many=True)
 
     class Meta:
         model = Company
         fields = ('id', 'title', 'description', 'users')
 
-    def create(self, validated_data):
-        users_data = validated_data.pop('users', [])
-        company = Company.objects.create(**validated_data)
 
-        if users_data:
-            user_ids = [user_data['email'] for user_data in users_data]
-            users = User.objects.filter(email__in=user_ids)
-            company.users.set(users)
-        return company
-
-    def update(self, instance, validated_data):
-        users_data = validated_data.pop('users', [])
-        for attr, value, in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-
-        if users_data:
-            user_ids = [user_data['email'] for user_data in users_data]
-            users = User.objects.filter(email__in=user_ids)
-            instance.users.add(*users)
-
-        return instance
-
-
-class PositionSerializer(serializers.ModelSerializer):
+class PositionSerializer(UserHandlingMixin, serializers.ModelSerializer):
     users = UserSerializer(many=True)
     access_weight = serializers.SerializerMethodField()
 
@@ -48,29 +26,6 @@ class PositionSerializer(serializers.ModelSerializer):
 
     def get_access_weight(self, obj):
         return obj.get_access_weight_display()
-
-    def create(self, validated_data):
-        users_data = validated_data.pop('users', [])
-        position = Position.objects.create(**validated_data)
-
-        if users_data:
-            user_ids = [user_data['email'] for user_data in users_data]
-            users = User.objects.filter(email__in=user_ids)
-            position.users.set(users)
-        return position
-
-    def update(self, instance, validated_data):
-        users_data = validated_data.pop('users', [])
-        for attr, value, in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-
-        if users_data:
-            user_ids = [user_data['email'] for user_data in users_data]
-            users = User.objects.filter(email__in=user_ids)
-            instance.users.add(*users)
-
-        return instance
 
 
 class PositionForProjectSerializer(serializers.ModelSerializer):
@@ -90,7 +45,7 @@ class PositionForProjectSerializer(serializers.ModelSerializer):
         return obj.get_access_weight_display()
 
 
-class ProjectSerializer(serializers.ModelSerializer):
+class ProjectSerializer(UserHandlingMixin, serializers.ModelSerializer):
     positions = serializers.SerializerMethodField(read_only=True)
     users = UserSerializer(many=True)
 
@@ -101,67 +56,19 @@ class ProjectSerializer(serializers.ModelSerializer):
     def get_positions(self, obj):
         positions_project = obj.positions.all()
         return PositionForProjectSerializer(positions_project, many=True).data
-    
-    def update(self, instance, validated_data):
-        users_data = validated_data.pop('users', [])
-        for attr, value, in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-
-        if users_data:
-            user_ids = [user_data['email'] for user_data in users_data]
-            users = User.objects.filter(email__in=user_ids)
-            instance.users.add(*users)
-        return instance
 
 
-class ProjectPostSerializer(serializers.ModelSerializer):
+class ProjectPostSerializer(UserHandlingMixin, serializers.ModelSerializer):
     users = UserSerializer(many=True)
 
     class Meta:
         model = Project
         fields = ('id', 'company', 'title', 'description', 'users')
 
-    def create(self, validated_data):
-        users_data = validated_data.pop('users', [])
-        position = Position.objects.create(**validated_data)
 
-        if users_data:
-            user_ids = [user_data['email'] for user_data in users_data]
-            users = User.objects.filter(email__in=user_ids)
-            position.users.set(users)
-        return position
-
-
-class DepartmentSerializer(serializers.ModelSerializer):
+class DepartmentSerializer(UserHandlingMixin, serializers.ModelSerializer):
     users = UserSerializer(many=True)
 
     class Meta:
         model = Department
         fields = ('id', 'title', 'description', 'parent', 'users')
-
-    def create(self, validated_data):
-        users_data = validated_data.pop('users', [])
-        position = Position.objects.create(**validated_data)
-
-        if users_data:
-            user_ids = [user_data['email'] for user_data in users_data]
-            users = User.objects.filter(email__in=user_ids)
-            position.users.set(users)
-        return position
-
-    def update(self, instance, validated_data):
-        users_data = validated_data.pop('users', [])
-        for attr, value, in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-
-        if users_data:
-            user_ids = [user_data['email'] for user_data in users_data]
-            users = User.objects.filter(email__in=user_ids)
-            instance.users.add(*users)
-        return instance
-
-
-
-
