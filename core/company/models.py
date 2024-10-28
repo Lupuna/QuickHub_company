@@ -92,11 +92,42 @@ class Project(models.Model):
         related_name='projects',
         help_text=_('connection with Company')
     )
+    users = models.ManyToManyField(
+        User, related_name='projects',
+        help_text=_('connection with User')
+    )
 
     class Meta:
         verbose_name = _("Project")
         verbose_name_plural = _("Projects")
         ordering = ['title']
+
+    def __str__(self):
+        return self.title
+
+
+class Department(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE,
+        related_name='departments',
+        help_text=_('connection with Company')
+    )
+    parent = models.ForeignKey(
+        'self', on_delete=models.PROTECT,
+        blank=True, null=True,
+        related_name='children',
+        help_text=_('connection with department parent')
+    )
+    users = models.ManyToManyField(
+        User, related_name='departments',
+        help_text=_('connection with User')
+    )
+
+    class Meta:
+        verbose_name = _("Department")
+        verbose_name_plural = _("Departments")
 
     def __str__(self):
         return self.title
