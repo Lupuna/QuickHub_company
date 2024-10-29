@@ -1,9 +1,12 @@
 asgiref==3.8.1
+colorama==0.4.6
 Django==5.1.1
 django-debug-toolbar==4.4.6
 djangorestframework==3.15.2
 drf-nested-routers==0.94.1
+loguru==0.7.2
 psycopg2==2.9.9
 redis==5.1.0
 sqlparse==0.5.1
 tzdata==2024.1
+win32-setctime==1.1.0
