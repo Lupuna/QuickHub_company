@@ -1,8 +1,9 @@
+from django.db.models import Prefetch
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APIRequestFactory, APIClient
 from company.views import PositionAPIViewSet, ProjectAPIViewSet
-from company.models import Company, Position, Project
+from company.models import Company, Position, Project, ProjectPosition
 from company.serializers import ProjectPostSerializer, ProjectSerializer
 from jwt_registration.models import User
 
@@ -57,8 +58,12 @@ class ProjectAPIViewSetTestCase(APITestCase):
         request = self.factory.get(url)
         self.view.setup(request, **kwargs)
 
-        correct_query = Project.objects.prefetch_related('position_projects', 'positions', 'users').filter(
-            company=kwargs['company_pk'])
+        prefetch_positions = Prefetch(
+            'positions',
+            queryset=Position.objects.filter(company=kwargs['company_pk']).prefetch_related('project_positions')
+            .only('id', 'title', 'access_weight', 'project_positions__project_access_weight')
+        )
+        correct_query = Project.objects.prefetch_related(prefetch_positions, 'users').filter(company=kwargs['company_pk'])
         self.assertQuerySetEqual(self.view.get_queryset(), correct_query)
 
     def test_get_serializer(self):

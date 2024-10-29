@@ -3,7 +3,7 @@ from rest_framework.viewsets import ModelViewSet
 from company.serializers import (
     CompanySerializer, PositionSerializer, DepartmentSerializer,
     ProjectSerializer, ProjectPostSerializer)
-from company.models import Company, Position, Project, Department
+from company.models import Company, Position, Project, Department, ProjectPosition
 
 
 class CompanyAPIViewSet(ModelViewSet):
