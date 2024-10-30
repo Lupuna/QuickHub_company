@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework_nested.routers import NestedSimpleRouter
 
-from company.views import CompanyAPIViewSet, PositionAPIViewSet, ProjectAPIViewSet
+from company.views import CompanyAPIViewSet, PositionAPIViewSet, ProjectAPIViewSet, DepartmentAPIViewSet
 from rest_framework.routers import SimpleRouter
 
 
@@ -14,8 +14,12 @@ position_router.register(r'positions', PositionAPIViewSet, basename='company-pos
 project_router = NestedSimpleRouter(router, r'companies', lookup='company')
 project_router.register(r'projects', ProjectAPIViewSet, basename='company-project')
 
+department_router = NestedSimpleRouter(router, r'companies', lookup='company')
+department_router.register(r'departments', DepartmentAPIViewSet, basename='company-department')
+
 urlpatterns = [
     path('api/v1/', include(router.urls)),
     path('api/v1/', include(position_router.urls)),
     path('api/v1/', include(project_router.urls)),
+    path('api/v1/', include(department_router.urls)),
 ]
