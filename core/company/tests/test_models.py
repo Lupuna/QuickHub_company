@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from company.models import Company, Position, Project, ProjectPosition
+from company.models import Company, Position, Project, ProjectPosition, Department
 from django.utils.translation import gettext_lazy as _
 
 
@@ -178,3 +178,41 @@ class ProjectPositionTestCase(TestCase):
         choices = field.choices
         expected_choices = ProjectPosition.WeightChoices.choices
         self.assertEqual(choices, expected_choices)
+
+
+class DepartmentTestCase(TestCase):
+
+    def setUp(self):
+        company_data = {
+            'title': 'test_company_1',
+            'description': 'test_description_1',
+        }
+        self.user = get_user_model().objects.create_user(email='test_email@gmail.com')
+        self.company = Company.objects.create(**company_data)
+        self.company.users.add(self.user)
+
+        self.department = Department.objects.create(
+            title='test_department_1',
+            company=self.company
+        )
+        self.department.users.add(self.user)
+
+    def test_str_method(self):
+        correct_meaning = self.department.title
+        self.assertEqual(correct_meaning, self.department.__str__())
+
+    def test_company_user_relationship(self):
+        self.assertIn(self.user, self.company.users.all())
+
+    def test_company_user_removal(self):
+        self.company.users.remove(self.user)
+        self.assertNotIn(self.user, self.company.users.all())
+
+    def test_meta_verbose_name(self):
+        self.assertEqual(Department._meta.verbose_name, _("Department"))
+
+    def test_meta_verbose_name_plural(self):
+        self.assertEqual(Department._meta.verbose_name_plural, _("Departments"))
+
+
+
