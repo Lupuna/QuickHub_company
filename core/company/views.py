@@ -1,16 +1,23 @@
 from django.db.models import Prefetch
+from drf_spectacular.utils import extend_schema
 from rest_framework.viewsets import ModelViewSet
 from company.serializers import (
     CompanySerializer, PositionSerializer, DepartmentSerializer,
     ProjectSerializer, ProjectPostSerializer)
-from company.models import Company, Position, Project, Department, ProjectPosition
+from company.models import Company, Position, Project, Department
 
 
+@extend_schema(
+    tags=["Company"]
+    )
 class CompanyAPIViewSet(ModelViewSet):
     serializer_class = CompanySerializer
     queryset = Company.objects.prefetch_related('users').all()
 
 
+@extend_schema(
+    tags=["Position"]
+    )
 class PositionAPIViewSet(ModelViewSet):
     serializer_class = PositionSerializer
 
@@ -18,6 +25,9 @@ class PositionAPIViewSet(ModelViewSet):
         return Position.objects.prefetch_related('users').filter(company=self.kwargs['company_pk'])
 
 
+@extend_schema(
+    tags=["Project"]
+    )
 class ProjectAPIViewSet(ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete']
 
@@ -36,6 +46,9 @@ class ProjectAPIViewSet(ModelViewSet):
         return Project.objects.prefetch_related(prefetch_positions, 'users').filter(company=company_id)
 
 
+@extend_schema(
+    tags=["Departments"]
+    )
 class DepartmentAPIViewSet(ModelViewSet):
     serializer_class = DepartmentSerializer
 

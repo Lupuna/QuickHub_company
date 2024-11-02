@@ -13,9 +13,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ops07n=b3^773+h3(!(fv-5p$x9xk8g+a)b^$m1*@p%hmryt_n'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('IS_DEBUG', False)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "92.63.67.98", '127.0.0.1']
 
 
 # Application definition
@@ -30,6 +30,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'debug_toolbar',
+    'drf_spectacular',
 
     'company.apps.CompanyConfig',
     'jwt_registration.apps.JwtRegistrationConfig',
@@ -74,6 +75,7 @@ DATABASES = {
         'NAME': os.environ.get('DB_NAME'),
         'USER': os.environ.get('DB_USER'),
         'PASSWORD': os.environ.get('DB_PASS'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
 
@@ -104,16 +106,20 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": "redis://redis:6379",
+        "LOCATION": "redis://redis:6380",
         "OPTIONS": {
             "db": "1",
         },
     }
 }
-CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_BROKER_URL = 'redis://redis:6380/0'
 SPECTACULAR_SETTINGS = {
     'TITLE': 'API Schema',
     'DESCRIPTION': 'Guide for the REST API',
