@@ -1,0 +1,7 @@
+FROM postgres:14.6-alpine
+
+RUN sed -i "s/#port = 5432/port = 5433/" /var/lib/postgresql/data/postgresql.conf
+
+ENV POSTGRES_DB=dbname
+ENV POSTGRES_USER=dbuser
+ENV POSTGRES_PASSWORD=password
