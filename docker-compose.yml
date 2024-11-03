@@ -14,7 +14,7 @@ services:
       - DB_USER=dbuser
       - DB_PASS=password
       - IS_DEBUG=True
-      - DB_PORT=5432
+      - DB_PORT=5433
     command: >
       sh -c "python manage.py runserver 0.0.0.0:8000"
     depends_on:
@@ -26,12 +26,16 @@ services:
       - POSTGRES_DB=dbname
       - POSTGRES_USER=dbuser
       - POSTGRES_PASSWORD=password
+    ports:
+      - "5433:5433"
     volumes:
       - db_data:/var/lib/postgresql/data
 
   redis:
     image: redis:7.0.5-alpine
     hostname: redis
+    ports:
+      - "6380:6380"
 
 volumes:
   db_data:
