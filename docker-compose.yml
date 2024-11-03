@@ -14,6 +14,7 @@ services:
       - DB_USER=dbuser
       - DB_PASS=password
       - IS_DEBUG=True
+      - DB_PORT=5432
     command: >
       sh -c "python manage.py runserver 0.0.0.0:8000"
     depends_on:
