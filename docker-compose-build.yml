@@ -14,7 +14,6 @@ services:
       - DB_NAME=dbname
       - DB_USER=dbuser
       - DB_PASS=password
-      - DB_PORT=5433
     command: >
       sh -c "gunicorn core.wsgi:application --bind 0.0.0.0:8002"
     depends_on:
