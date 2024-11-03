@@ -62,9 +62,3 @@ class CreateProjectPositionTestCase(TestCase):
         self.assertTrue(project.positions.filter(id=self.position1.id).exists())
         self.assertTrue(project.positions.filter(id=self.position2.id).exists())
         self.assertEqual(project.position_projects.count(), 2)
-
-
-
-
-
-

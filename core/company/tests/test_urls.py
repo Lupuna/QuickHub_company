@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import resolve
 from django.urls import reverse
-from company.views import CompanyAPIViewSet, PositionAPIViewSet, ProjectAPIViewSet
+from company.views import CompanyAPIViewSet, PositionAPIViewSet, ProjectAPIViewSet, DepartmentAPIViewSet
 
 
 class CompanyAPIRouterTestCase(TestCase):
@@ -39,3 +39,15 @@ class ProjectAPIRouterTestCase(TestCase):
         url = reverse('company-project-detail', kwargs={'company_pk': 1, 'pk': 1})
         resolved_view = resolve(url).func.cls
         self.assertEqual(resolved_view, ProjectAPIViewSet)
+
+
+class DepartmentAPIRouterTestCase(TestCase):
+    def test_department_list_route(self):
+        url = reverse('company-department-list', kwargs={'company_pk': 1})
+        resolved_view = resolve(url).func.cls
+        self.assertEqual(resolved_view, DepartmentAPIViewSet)
+
+    def test_department_detail_route(self):
+        url = reverse('company-department-detail', kwargs={'company_pk': 1, 'pk': 1})
+        resolved_view = resolve(url).func.cls
+        self.assertEqual(resolved_view, DepartmentAPIViewSet)
