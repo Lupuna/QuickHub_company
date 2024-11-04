@@ -18,8 +18,8 @@ department_router = NestedSimpleRouter(router, r'companies', lookup='company')
 department_router.register(r'departments', DepartmentAPIViewSet, basename='company-department')
 
 urlpatterns = [
-    path('api/v1/', include(router.urls)),
-    path('api/v1/', include(position_router.urls)),
-    path('api/v1/', include(project_router.urls)),
-    path('api/v1/', include(department_router.urls)),
+    path('', include(router.urls)),
+    path('', include(position_router.urls)),
+    path('', include(project_router.urls)),
+    path('', include(department_router.urls)),
 ]

@@ -47,7 +47,7 @@ class ProjectAPIViewSet(ModelViewSet):
 
 
 @extend_schema(
-    tags=["Departments"]
+    tags=["Department"]
     )
 class DepartmentAPIViewSet(ModelViewSet):
     serializer_class = DepartmentSerializer

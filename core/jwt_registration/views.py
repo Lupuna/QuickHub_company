@@ -6,9 +6,8 @@ from jwt_registration.serializers import UserSerializer
 
 
 @extend_schema(
-    tags=["Create users"]
+    tags=["Create user"]
     )
 class RegistrationAPIViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-

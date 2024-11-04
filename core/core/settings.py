@@ -34,6 +34,7 @@ INSTALLED_APPS = [
 
     'company.apps.CompanyConfig',
     'jwt_registration.apps.JwtRegistrationConfig',
+    'users.apps.UsersConfig'
 ]
 
 MIDDLEWARE = [
