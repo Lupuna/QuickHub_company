@@ -1,9 +1,8 @@
 from django.db.models import Prefetch
 from django.urls import reverse
-from rest_framework import status
-from rest_framework.test import APITestCase, APIRequestFactory, APIClient
+from rest_framework.test import APITestCase, APIRequestFactory
 from company.views import PositionAPIViewSet, ProjectAPIViewSet
-from company.models import Company, Position, Project, ProjectPosition
+from company.models import Company, Position, Project
 from company.serializers import ProjectPostSerializer, ProjectSerializer
 from jwt_registration.models import User
 

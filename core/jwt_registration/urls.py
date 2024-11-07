@@ -3,9 +3,9 @@ from rest_framework.routers import SimpleRouter
 from jwt_registration.views import RegistrationAPIViewSet
 
 
-router = SimpleRouter()
-router.register(r'users', RegistrationAPIViewSet)
+user_router = SimpleRouter()
+user_router.register(r'users', RegistrationAPIViewSet)
 
 urlpatterns = [
-    path('api/v1', include(router.urls)),
+    path('', include(user_router.urls)),
 ]

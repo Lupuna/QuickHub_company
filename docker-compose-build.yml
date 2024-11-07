@@ -5,7 +5,7 @@ services:
     build:
       context: .
     ports:
-      - "8001:8001"
+      - "8002:8002"
     volumes:
       - ./core/static:/static/
       - ./core:/core
@@ -14,9 +14,8 @@ services:
       - DB_NAME=dbname
       - DB_USER=dbuser
       - DB_PASS=password
-      - DB_PORT=5433
     command: >
-      sh -c "gunicorn core.wsgi:application --bind 0.0.0.0:8001"
+      sh -c "gunicorn core.wsgi:application --bind 0.0.0.0:8002"
     depends_on:
       - database
 
@@ -27,23 +26,24 @@ services:
       - POSTGRES_USER=dbuser
       - POSTGRES_PASSWORD=password
     ports:
-      - "5433:5432"
+      - "5433:5433"
     volumes:
       - db_data:/var/lib/postgresql/data
+    command: -p 5433
 
   redis:
     image: redis:7.0.5-alpine
     hostname: redis
     ports:
-      - "6380:6379"
+      - "6380:6380"
 
   nginx:
     image: nginx:latest
     volumes:
-      - ./conf/nginx.conf:/etc/nginx/nginx.conf:rw
+      - ./conf/nginx.conf:/etc/nginx/default.conf:ro
       - ./core/static:/static/
     ports:
-      - '81:81'
+      - '82:82'
     depends_on:
       - web-app
 

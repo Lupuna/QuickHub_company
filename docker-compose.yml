@@ -25,12 +25,17 @@ services:
       - POSTGRES_DB=dbname
       - POSTGRES_USER=dbuser
       - POSTGRES_PASSWORD=password
+    ports:
+      - "5433:5433"
     volumes:
       - db_data:/var/lib/postgresql/data
+    command: -p 5433
 
   redis:
     image: redis:7.0.5-alpine
     hostname: redis
+    ports:
+      - "6380:6380"
 
 volumes:
   db_data:
