@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-
+from dotenv import load_dotenv
 import socket
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -13,6 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ops07n=b3^773+h3(!(fv-5p$x9xk8g+a)b^$m1*@p%hmryt_n'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+load_dotenv()
 DEBUG = os.environ.get('IS_DEBUG', False)
 
 ALLOWED_HOSTS = ["localhost", "92.63.67.98", '127.0.0.1']
@@ -135,3 +136,15 @@ hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
 INTERNAL_IPS += [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]
 
 AUTH_USER_MODEL = 'jwt_registration.User'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.yandex.ru'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+SERVER_EMAIL = EMAIL_HOST_USER
+EMAIL_ADMIN = EMAIL_HOST_USER
