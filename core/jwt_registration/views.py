@@ -42,13 +42,13 @@ class RegistrationAPIViewSet(ModelViewSet):
 
     @action(detail=False, methods=['post'], url_path='rollback')
     def rollback_user(self, request, *args, **kwargs):
-        user_id = request.session.get('user_id')
+        user_email = request.data.get('email')
 
-        if not user_id:
+        if not user_email:
             return Response({'error': 'User creation not initiated'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            User.objects.get(id=user_id).delete()
+            User.objects.get(email=user_email).delete()
             return Response({'status': 'rolled back'}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
