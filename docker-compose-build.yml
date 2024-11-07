@@ -38,7 +38,7 @@ services:
       - "6380:6380"
 
   nginx:
-    image: nginx:latest
+    build: ./nginx
     volumes:
       - ./conf/nginx.conf:/etc/nginx/default.conf:ro
       - ./core/static:/static/
