@@ -48,7 +48,7 @@ class RegistrationAPIViewSet(ModelViewSet):
             return Response({'error': 'User creation not initiated'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            user = User.objects.get(id=user_id).delete()
+            User.objects.get(id=user_id).delete()
             return Response({'status': 'rolled back'}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
