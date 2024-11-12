@@ -7,7 +7,7 @@ from users.serializers import UserCompanySerializer
 
 
 @extend_schema(
-    tags=["User company"]
+    tags=["User"]
     )
 class UserCompanyAPIViewSet(ReadOnlyModelViewSet):
     serializer_class = UserCompanySerializer
@@ -18,4 +18,3 @@ class UserCompanyAPIViewSet(ReadOnlyModelViewSet):
             queryset=Company.objects.all().only('id', 'title')
         )
         return User.objects.prefetch_related(company_prefetch).all()
-

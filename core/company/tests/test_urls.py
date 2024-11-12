@@ -1,6 +1,8 @@
 from django.test import TestCase
 from django.urls import resolve
 from django.urls import reverse
+from rest_framework.routers import SimpleRouter
+
 from company.views import CompanyAPIViewSet, PositionAPIViewSet, ProjectAPIViewSet, DepartmentAPIViewSet
 
 
@@ -13,6 +15,11 @@ class CompanyAPIRouterTestCase(TestCase):
 
     def test_company_detail_route(self):
         url = reverse('company-detail', args=[1])
+        resolved_view = resolve(url).func.cls
+        self.assertEqual(resolved_view, CompanyAPIViewSet)
+
+    def test_company_users_emails_route(self):
+        url = reverse('company-get-users-email-only', args=[1])
         resolved_view = resolve(url).func.cls
         self.assertEqual(resolved_view, CompanyAPIViewSet)
 
