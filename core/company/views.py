@@ -1,10 +1,14 @@
 from django.db.models import Prefetch
 from drf_spectacular.utils import extend_schema
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from company.serializers import (
     CompanySerializer, PositionSerializer, DepartmentSerializer,
     ProjectSerializer, ProjectPostSerializer)
 from company.models import Company, Position, Project, Department
+from jwt_registration.models import User
+from users.serializers import OnlyUserEmailSerializer
 
 
 @extend_schema(
@@ -13,6 +17,17 @@ from company.models import Company, Position, Project, Department
 class CompanyAPIViewSet(ModelViewSet):
     serializer_class = CompanySerializer
     queryset = Company.objects.prefetch_related('users').all()
+
+    def get_users_for_company(self):
+        company = self.kwargs['pk']
+        return User.objects.filter(companies=company).only('email')
+
+    @extend_schema(responses=OnlyUserEmailSerializer, request=OnlyUserEmailSerializer)
+    @action(detail=True, methods=['GET'], url_path='users-emails')
+    def get_users_email_only(self, request, *args, **kwargs):
+        queryset = self.get_users_for_company()
+        serializer = OnlyUserEmailSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 @extend_schema(
