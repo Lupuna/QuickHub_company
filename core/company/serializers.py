@@ -2,7 +2,6 @@ from rest_framework import serializers
 from jwt_registration.serializers import UserSerializer
 from company.models import Company, Position, Project, Department
 from company.mixins import UserHandlingMixin
-from jwt_registration.models import User
 
 
 class CompanySerializer(UserHandlingMixin, serializers.ModelSerializer):
@@ -11,6 +10,13 @@ class CompanySerializer(UserHandlingMixin, serializers.ModelSerializer):
     class Meta:
         model = Company
         fields = ('id', 'title', 'users')
+
+
+class CompanyForUserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Company
+        fields = ('id', 'title')
 
 
 class PositionSerializer(UserHandlingMixin, serializers.ModelSerializer):

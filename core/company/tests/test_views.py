@@ -1,27 +1,35 @@
 from django.db.models import Prefetch
 from django.urls import reverse
-from rest_framework import status
-from rest_framework.test import APITestCase, APIRequestFactory, APIClient
-from company.views import PositionAPIViewSet, ProjectAPIViewSet
-from company.models import Company, Position, Project, ProjectPosition
+from company.views import PositionAPIViewSet, ProjectAPIViewSet, CompanyAPIViewSet
+from company.models import Position, Project
 from company.serializers import ProjectPostSerializer, ProjectSerializer
 from jwt_registration.models import User
+from .test_base import BaseAPITestCase
 
 
-class PositionAPIViewSetTestCase(APITestCase):
+class CompanyAPIViewSetTestCase(BaseAPITestCase):
 
     def setUp(self):
-        self.user1 = User.objects.create(email='test_email_1@gmail.com')
-        self.user2 = User.objects.create(email='test_email_2@gmail.com')
+        self.view = CompanyAPIViewSet()
 
-        company_data = {
-            'title': 'test_company_title_1',
-            'description': 'test_company_description_1',
-        }
-        self.company = Company.objects.create(**company_data)
-        self.company.users.add(self.user1, self.user2)
+    def test_get_users_for_company(self):
+        kwargs = {'pk': self.company.id}
+        url = reverse('company-get-users-email-only', kwargs=kwargs)
+        request = self.factory.get(url)
+        self.view.setup(request, **kwargs)
+        correct_query = User.objects.filter(companies=self.company.id).only('email')
+        self.assertQuerySetEqual(self.view.get_users_for_company(), correct_query, ordered=False)
 
-        self.factory = APIRequestFactory()
+    def test_get_users_email_only(self):
+        kwargs = {'pk': self.company.id}
+        url = reverse('company-get-users-email-only', kwargs=kwargs)
+        response = self.client.get(url)
+        self.assertTrue(all(user['email'] for user in response if user in self.company.users.all()))
+
+
+class PositionAPIViewSetTestCase(BaseAPITestCase):
+
+    def setUp(self):
         self.view = PositionAPIViewSet()
 
     def test_get_queryset(self):
@@ -34,22 +42,9 @@ class PositionAPIViewSetTestCase(APITestCase):
         self.assertQuerySetEqual(self.view.get_queryset(), correct_query)
 
 
-class ProjectAPIViewSetTestCase(APITestCase):
+class ProjectAPIViewSetTestCase(BaseAPITestCase):
 
     def setUp(self):
-        company_data = {
-            'title': 'test_company_title_1',
-            'description': 'test_company_description_1',
-        }
-        self.company = Company.objects.create(**company_data)
-        position_data = {
-            'title': 'test_position_title_1',
-            'description': 'test_position_description_1',
-            'company': self.company
-        }
-        self.position = Position.objects.create(**position_data)
-
-        self.factory = APIRequestFactory()
         self.view = ProjectAPIViewSet()
 
     def test_get_queryset(self):
