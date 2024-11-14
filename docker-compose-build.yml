@@ -39,7 +39,7 @@ services:
     command: --port 6380
 
   nginx:
-    build: ./nginx
+    build: .
     volumes:
       - ./conf/nginx.conf:/etc/nginx/default.conf:ro
       - ./core/static:/static/
