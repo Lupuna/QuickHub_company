@@ -1,11 +1,11 @@
-from django.db.models.signals import m2m_changed, post_save,pre_save
+from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
 from company.models import Company, Position, Project, ProjectPosition, User
 from django.core.exceptions import ValidationError
 
 
 @receiver(m2m_changed, sender=Company.users.through)
-def create_company_position(sender, instance, action, **kwargs):
+def create_company_position(instance, action, **kwargs):
     user_creator_id = list(kwargs.get('pk_set', []))[0]
     if action == 'pre_add':
         creator = User.objects.get(id=user_creator_id)
