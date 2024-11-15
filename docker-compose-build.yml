@@ -36,10 +36,10 @@ services:
     hostname: redis
     ports:
       - "6380:6380"
-    command: --port 6380"
+    command: --port 6380
 
   nginx:
-    build: ./nginx
+    image: nginx:latest
     volumes:
       - ./conf/nginx.conf:/etc/nginx/default.conf:ro
       - ./core/static:/static/
