@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework_nested.routers import NestedSimpleRouter
 
-from company.views import CompanyAPIViewSet, PositionAPIViewSet, ProjectAPIViewSet, DepartmentAPIViewSet
+from company.views import CompanyAPIViewSet, PositionAPIViewSet, ProjectAPIViewSet, DepartmentAPIViewSet, UserInCompanyValidateView
 from rest_framework.routers import SimpleRouter
 
 
@@ -22,4 +22,5 @@ urlpatterns = [
     path('', include(position_router.urls)),
     path('', include(project_router.urls)),
     path('', include(department_router.urls)),
+    path('<int:company_pk>/',UserInCompanyValidateView.as_view())
 ]

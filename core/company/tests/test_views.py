@@ -1,9 +1,9 @@
 from django.db.models import Prefetch
 from django.urls import reverse
 from rest_framework.test import APITestCase, APIRequestFactory
-from company.views import PositionAPIViewSet, ProjectAPIViewSet
+from company.views import PositionAPIViewSet, ProjectAPIViewSet, UserInCompanyValidateSerializer
 from company.models import Company, Position, Project
-from company.serializers import ProjectPostSerializer, ProjectSerializer
+from company.serializers import ProjectPostSerializer, ProjectSerializer, UserInCompanyValidateSerializer
 from jwt_registration.models import User
 
 
@@ -78,3 +78,31 @@ class ProjectAPIViewSetTestCase(APITestCase):
             request = self.factory.get(url)
             self.view.setup(request, **kwargs)
             self.assertEqual(self.view.get_serializer_class(), ProjectSerializer)
+
+
+class UserInCompanyValidateTest(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create(email='ali@gmail.com')
+        self.company = Company.objects.create(title='ltd')
+        self.company.users.add(self.user)
+        self.client = self.client_class()
+
+    def test_post(self):
+        data1 = {'email': 'ali@gmail.com'}
+        data2 = {'email': 'sdff@gmail.com'}
+        response1 = self.client.post(
+            path=f'http://127.0.0.1:8000/company-service/api/v1/company/{self.company.id}/',
+            data=data1,
+            format='json'
+        )
+        response2 = self.client.post(
+            f'http://127.0.0.1:8000/company-service/api/v1/company/{self.company.id}/',
+            data=data2,
+            format='json'
+        )
+
+        self.assertEqual(response1.status_code,200)
+        self.assertEqual(response1.data['status'],'User in company')
+        self.assertEqual(response2.status_code,400)
+        self.assertEqual(response2.data['status'],'User is not in company')
+

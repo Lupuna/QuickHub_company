@@ -3,8 +3,13 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.viewsets import ModelViewSet
 from company.serializers import (
     CompanySerializer, PositionSerializer, DepartmentSerializer,
-    ProjectSerializer, ProjectPostSerializer)
+    ProjectSerializer, ProjectPostSerializer, UserInCompanyValidateSerializer)
 from company.models import Company, Position, Project, Department
+from rest_framework.generics import GenericAPIView
+from rest_framework.response import Response
+from rest_framework import status
+
+from jwt_registration.models import User
 
 
 @extend_schema(
@@ -54,3 +59,20 @@ class DepartmentAPIViewSet(ModelViewSet):
 
     def get_queryset(self):
         return Department.objects.prefetch_related('users').filter(company=self.kwargs['company_pk'])
+    
+
+@extend_schema(
+    tags=['UserInCompanyValidate']
+)
+class UserInCompanyValidateView(GenericAPIView):
+    serializer_class = UserInCompanyValidateSerializer
+    def post(self, request, *args, **kwargs):
+        serializer = UserInCompanyValidateSerializer(data=request.data)
+        if serializer.is_valid():
+            user = User.objects.filter(email=serializer.data.get('email', None))
+            user_in_company = Company.objects.get(id=self.kwargs['company_pk']).users.through.objects.filter(user__in=user).exists()
+            if user_in_company:
+                return Response({'status':'User in company'},status=status.HTTP_200_OK)
+            else:
+                return Response({'status':'User is not in company'},status=status.HTTP_400_BAD_REQUEST)
+
