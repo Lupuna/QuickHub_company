@@ -13,7 +13,7 @@ def create_company_position(instance, action, **kwargs):
         creators_positions_list = Position.objects.filter(company__in=creators_company_with_same_title).values_list('access_weight')
         if (0,) in creators_positions_list:
             instance.delete()
-            raise ValidationError('You already created company with the same name')
+            raise ValidationError({'error':'data_update is required'})
     if action == 'post_add':
         user_creator_id = list(kwargs.get('pk_set', []))[0]
         creator = User.objects.get(id=user_creator_id)
