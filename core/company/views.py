@@ -82,8 +82,7 @@ class UserInCompanyValidateView(GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = UserEmailSerializer(data=request.data)
         if serializer.is_valid():
-            user = User.objects.filter(email=serializer.data.get('email', None))
-            user_in_company = Company.objects.get(id=self.kwargs['company_pk']).users.through.objects.filter(user__in=user).exists()
+            user_in_company = Company.objects.get(id=self.kwargs['company_pk']).users.filter(email=serializer.data.get('email', None)).exists()
             if user_in_company:
                 return Response({'status':'User in company'},status=status.HTTP_200_OK)
             else:
