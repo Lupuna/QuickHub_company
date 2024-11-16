@@ -87,12 +87,12 @@ class UserInCompanyValidateTest(BaseAPITestCase):
         data1 = {'email': 'ali@gmail.com'}
         data2 = {'email': 'sdff@gmail.com'}
         response1 = self.client.post(
-            path=f'http://127.0.0.1:8000/company-service/api/v1/company/{self.company.id}/',
+            path=reverse('user-in-company', kwargs={'company_pk':self.company.id}),
             data=data1,
             format='json'
         )
         response2 = self.client.post(
-            f'http://127.0.0.1:8000/company-service/api/v1/company/{self.company.id}/',
+            path=reverse('user-in-company', kwargs={'company_pk':self.company.id}),
             data=data2,
             format='json'
         )

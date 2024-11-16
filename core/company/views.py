@@ -7,7 +7,8 @@ from rest_framework.generics import GenericAPIView
 from rest_framework import status
 from company.serializers import (
     CompanySerializer, PositionSerializer, DepartmentSerializer,
-    ProjectSerializer, ProjectPostSerializer, UserInCompanyValidateSerializer)
+    ProjectSerializer, ProjectPostSerializer)
+from users.serializers import UserEmailSerializer
 from company.models import Company, Position, Project, Department
 from jwt_registration.models import User
 from users.serializers import OnlyUserEmailSerializer
@@ -77,9 +78,9 @@ class DepartmentAPIViewSet(ModelViewSet):
     tags=['UserInCompanyValidate']
 )
 class UserInCompanyValidateView(GenericAPIView):
-    serializer_class = UserInCompanyValidateSerializer
+    serializer_class = UserEmailSerializer
     def post(self, request, *args, **kwargs):
-        serializer = UserInCompanyValidateSerializer(data=request.data)
+        serializer = UserEmailSerializer(data=request.data)
         if serializer.is_valid():
             user = User.objects.filter(email=serializer.data.get('email', None))
             user_in_company = Company.objects.get(id=self.kwargs['company_pk']).users.through.objects.filter(user__in=user).exists()

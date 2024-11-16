@@ -22,5 +22,5 @@ urlpatterns = [
     path('', include(position_router.urls)),
     path('', include(project_router.urls)),
     path('', include(department_router.urls)),
-    path('<int:company_pk>/',UserInCompanyValidateView.as_view()),
+    path('<int:company_pk>/',UserInCompanyValidateView.as_view(), name='user-in-company'),
 ]
