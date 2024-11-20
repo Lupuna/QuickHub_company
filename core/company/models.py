@@ -1,7 +1,7 @@
 from django.db import models
 from jwt_registration.models import User
 from django.utils.translation import gettext_lazy as _
-
+import random
 
 class Company(models.Model):
     title = models.CharField(max_length=255)
@@ -124,6 +124,7 @@ class Department(models.Model):
         User, related_name='departments',
         help_text=_('connection with User')
     )
+    color = models.CharField(max_length=20, default=f'rgb({random.randint(150,220)},{random.randint(150,220)},{random.randint(150,220)})')
 
     class Meta:
         verbose_name = _("Department")
