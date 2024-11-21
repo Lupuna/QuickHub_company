@@ -38,15 +38,5 @@ services:
       - "6380:6380"
     command: --port 6380
 
-  nginx:
-    image: nginx:latest
-    volumes:
-      - ./conf/nginx.conf:/etc/nginx/default.conf:ro
-      - ./core/static:/static/
-    ports:
-      - '82:82'
-    depends_on:
-      - web-app
-
 volumes:
   db_data:
