@@ -77,4 +77,4 @@ class DepartmentSerializer(UserHandlingMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Department
-        fields = ('id', 'title', 'description', 'parent', 'users')
+        fields = ('id', 'title', 'description', 'parent', 'users', 'color')

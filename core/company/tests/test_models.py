@@ -214,5 +214,5 @@ class DepartmentTestCase(TestCase):
     def test_meta_verbose_name_plural(self):
         self.assertEqual(Department._meta.verbose_name_plural, _("Departments"))
 
-
-
+    def test_color(self):
+        self.assertIsNotNone(self.department.color)
