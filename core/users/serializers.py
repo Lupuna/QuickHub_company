@@ -16,3 +16,7 @@ class UserCompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'email', 'companies')
+
+
+class UserEmailSerializer(serializers.Serializer):
+    email = serializers.EmailField()
