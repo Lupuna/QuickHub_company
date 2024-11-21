@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+
+from corsheaders.defaults import default_headers
 from dotenv import load_dotenv
 import socket
 
@@ -32,6 +34,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'debug_toolbar',
     'drf_spectacular',
+    'corsheaders',
 
     'company.apps.CompanyConfig',
     'jwt_registration.apps.JwtRegistrationConfig',
@@ -39,6 +42,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -111,6 +115,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+# Разрешить определённые заголовки
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "Authorization",
+]
 
 CACHES = {
     "default": {
