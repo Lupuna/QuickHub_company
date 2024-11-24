@@ -17,7 +17,7 @@ class CompanyAPIViewSetTestCase(BaseAPITestCase):
         url = reverse('company-get-users-email-only', kwargs=kwargs)
         request = self.factory.get(url)
         self.view.setup(request, **kwargs)
-        correct_query = User.objects.filter(companies=self.company.id).only('email')
+        correct_query = User.objects.filter(companies=self.company.id).only('email').prefetch_related('positions','departments')
         self.assertQuerySetEqual(self.view.get_users_for_company(), correct_query, ordered=False)
 
     def test_get_users_email_only(self):
