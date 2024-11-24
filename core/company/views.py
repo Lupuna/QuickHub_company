@@ -23,7 +23,7 @@ class CompanyAPIViewSet(ModelViewSet):
 
     def get_users_for_company(self):
         company = self.kwargs['pk']
-        return User.objects.filter(companies=company).only('email')
+        return User.objects.filter(companies=company).only('email', ).prefetch_related('positions', 'departments')
 
     @extend_schema(responses=OnlyUserEmailSerializer, request=OnlyUserEmailSerializer)
     @action(detail=True, methods=['GET'], url_path='users-emails')
