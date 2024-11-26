@@ -9,7 +9,7 @@ class CompanySerializer(UserHandlingMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Company
-        fields = ('id', 'title', 'users')
+        fields = ('id', 'title', 'users', 'description')
 
 
 class CompanyForUserSerializer(serializers.ModelSerializer):
