@@ -3,6 +3,7 @@ from jwt_registration.models import User
 from django.utils.translation import gettext_lazy as _
 import random
 
+
 class Company(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
@@ -88,7 +89,7 @@ class Project(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
     company = models.ForeignKey(
-        Company, on_delete=models.PROTECT,
+        Company, on_delete=models.CASCADE,
         related_name='projects',
         help_text=_('connection with Company')
     )
@@ -115,7 +116,7 @@ class Department(models.Model):
         help_text=_('connection with Company')
     )
     parent = models.ForeignKey(
-        'self', on_delete=models.PROTECT,
+        'self', on_delete=models.CASCADE,
         blank=True, null=True,
         related_name='children',
         help_text=_('connection with department parent')
@@ -124,7 +125,8 @@ class Department(models.Model):
         User, related_name='departments',
         help_text=_('connection with User')
     )
-    color = models.CharField(max_length=20, default=f'rgb({random.randint(150,220)},{random.randint(150,220)},{random.randint(150,220)})')
+    color = models.CharField(max_length=20,
+                             default=f'rgb({random.randint(150, 220)},{random.randint(150, 220)},{random.randint(150, 220)})')
 
     class Meta:
         verbose_name = _("Department")
