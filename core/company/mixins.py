@@ -22,4 +22,6 @@ class UserHandlingMixin:
             users = User.objects.filter(email__in=user_emails)
             if created:
                 instance.users.set(users)
-            else: instance.users.add(*users)
+            else:
+                instance.users.clear()
+                instance.users.add(*users)

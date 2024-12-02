@@ -9,15 +9,18 @@ services:
     volumes:
       - ./core:/core
     environment:
-      - DB_HOST=database
+      - DB_HOST=localhost
       - DB_NAME=dbname
       - DB_USER=dbuser
       - DB_PASS=password
       - IS_DEBUG=True
+      - REDIS_URL=redis://localhost:6379/0
     command: >
       sh -c "python manage.py runserver 0.0.0.0:8001"
     depends_on:
       - database
+      - redis
+    network_mode: "host"
 
   database:
     image: postgres:14.6-alpine
@@ -30,6 +33,7 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     command: -p 5433
+    network_mode: "host"
 
   redis:
     image: redis:7.0.5-alpine
@@ -37,6 +41,7 @@ services:
     ports:
       - "6380:6380"
     command: --port 6380
+    network_mode: "host"
 
 volumes:
   db_data:
