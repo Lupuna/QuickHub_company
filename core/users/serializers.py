@@ -1,12 +1,12 @@
 from rest_framework import serializers
 from jwt_registration.models import User
 from company.serializers import CompanyForUserSerializer
-from company.serializers import PositionSerializer, DepartmentSerializer
+from company.serializers import PositionNoUsersSerializer, DepartmentNoUsersSerializer
 
 
 class OnlyUserEmailSerializer(serializers.ModelSerializer):
-    positions = PositionSerializer(many=True)
-    departments = DepartmentSerializer(many=True)
+    positions = PositionNoUsersSerializer(many=True)
+    departments = DepartmentNoUsersSerializer(many=True)
 
     class Meta:
         model = User

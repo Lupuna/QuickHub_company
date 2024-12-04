@@ -5,6 +5,7 @@ from company.models import Company, Position, Project
 from company.serializers import ProjectPostSerializer, ProjectSerializer
 from jwt_registration.models import User
 from .test_base import BaseAPITestCase
+from unittest.mock import patch, MagicMock
 
 
 class CompanyAPIViewSetTestCase(BaseAPITestCase):
@@ -101,3 +102,99 @@ class UserInCompanyValidateTest(BaseAPITestCase):
         self.assertEqual(response1.data['status'],'User in company')
         self.assertEqual(response2.status_code,400)
         self.assertEqual(response2.data['status'],'User is not in company')
+
+
+class DepartmentAPIViewSetYestCase(BaseAPITestCase):
+    def setUp(self):
+        self.department.users.add(self.user1)
+        self.department.save()
+        self.position.users.add(self.user1)
+        self.position.save()
+
+    @patch('company.views.requests.get')
+    def test_get_users_info_by_dep(self, mock_get):
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = [
+            {
+                "id": 1,
+                "email": "test_email_1@gmail.com",
+                "first_name": "",
+                "last_name": "",
+                "phone": "",
+                "image_identifier": '',
+                "date_joined": '',
+                "links": [],
+                "positions": [
+                    {
+                        "id": 1,
+                        "title": "test_position_title_1",
+                        "description": 'test_position_description_1',
+                        "access_weight": "Owner",
+                        "company": 1,
+                        "users": [
+                            {
+                                "id": 1,
+                                "email": "test_email_1@gmail.com"
+                            }
+                        ]
+                    }
+                ],
+                'departments':[
+                    {
+                        "id": 2,
+                        "title": "test_dep",
+                        "description": "",
+                        "parent": None,
+                        "users": [
+                            {
+                                "id": 1,
+                                "email": "test_email_1@example.com"
+                            }
+                        ],
+                        "color": "rgb(152,219,216)"
+                    }
+                ]
+            },
+            {
+                "id": 2,
+                "email": "test_email_2@gmail.com",
+                "first_name": "",
+                "last_name": "",
+                "phone": "",
+                "image_identifier": '',
+                "date_joined": '',
+                "links": [],
+                "positions": [],
+                'departments': ['fsf']
+            }
+        ]
+        mock_get.return_value = mock_response
+        
+        url = 'http://92.63.67.98:8002' + reverse('company-department-get_users_info_by_dep', kwargs={'company_pk': self.company.id, 'dep_pk': self.department.id})
+        response = self.client.get(url, HTTP_HOST='92.63.67.98')
+
+        data_expected = [
+            {
+                "id": 1,
+                "email": "test_email_1@gmail.com",
+                "first_name": "",
+                "last_name": "",
+                "phone": "",
+                "image_identifier": '',
+                "date_joined": '',
+                "links": [],
+                "positions": [
+                    {
+                        "id": 1,
+                        "title": "test_position_title_1",
+                        "description": 'test_position_description_1',
+                        "access_weight": "Owner",
+                        "company": 1,
+                    }
+                ]
+            }
+        ]
+        self.assertEqual(response.data, data_expected)
+        
+

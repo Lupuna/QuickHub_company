@@ -74,8 +74,10 @@ class ProjectPosition(models.Model):
         help_text=_("access level for the position")
     )
 
-    position = models.ForeignKey(Position, on_delete=models.CASCADE, related_name='project_positions')
-    project = models.ForeignKey('Project', on_delete=models.CASCADE, related_name='position_projects')
+    position = models.ForeignKey(
+        Position, on_delete=models.CASCADE, related_name='project_positions')
+    project = models.ForeignKey(
+        'Project', on_delete=models.CASCADE, related_name='position_projects')
 
     class Meta:
         verbose_name = _("Project Position")
