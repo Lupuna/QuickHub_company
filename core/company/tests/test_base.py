@@ -1,6 +1,6 @@
 from rest_framework.test import APITestCase, APIRequestFactory, APIClient
 
-from company.models import Company, Position
+from company.models import Company, Position, Department
 from jwt_registration.models import User
 
 
@@ -26,3 +26,6 @@ class BaseAPITestCase(APITestCase):
             'company': cls.company
         }
         cls.position = Position.objects.create(**position_data)
+
+        cls.department = Department.objects.create(
+            title='test_dep', company=cls.company)

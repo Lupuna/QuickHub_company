@@ -34,6 +34,24 @@ class PositionSerializer(UserHandlingMixin, serializers.ModelSerializer):
         return obj.get_access_weight_display()
 
 
+class PositionNoUsersSerializer(PositionSerializer):
+
+    class Meta:
+        model = Position
+        fields = (
+            'id', 'title', 'description',
+            'access_weight', 'company'
+        )
+
+
+class PositionNoModelSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    title = serializers.CharField()
+    description = serializers.CharField()
+    access_weight = serializers.CharField()
+    company = serializers.IntegerField()
+
+
 class PositionForProjectSerializer(serializers.ModelSerializer):
     access_weight = serializers.SerializerMethodField()
     project_positions = serializers.SerializerMethodField()
@@ -57,7 +75,8 @@ class ProjectSerializer(UserHandlingMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ('id', 'company', 'title', 'description', 'positions', 'users')
+        fields = ('id', 'company', 'title',
+                  'description', 'positions', 'users')
 
     def get_positions(self, obj):
         positions_project = obj.positions.all()
@@ -78,3 +97,37 @@ class DepartmentSerializer(UserHandlingMixin, serializers.ModelSerializer):
     class Meta:
         model = Department
         fields = ('id', 'title', 'description', 'parent', 'users', 'color')
+
+
+class DepartmentNoUsersSerializer(DepartmentSerializer):
+
+    class Meta:
+        model = Department
+        fields = ('id', 'title', 'description', 'parent', 'company', 'color')
+
+
+class DepartmentNoModelSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    title = serializers.CharField()
+    description = serializers.CharField()
+    parent = serializers.IntegerField()
+    company = serializers.PrimaryKeyRelatedField(read_only=True)
+    color = serializers.CharField()
+
+
+class LinkNoModelSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    title = serializers.CharField()
+    link = serializers.CharField()
+
+
+class ProfileUserForDepSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    email = serializers.CharField()
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    phone = serializers.CharField()
+    image_identifier = serializers.CharField()
+    date_joined = serializers.CharField()
+    links = LinkNoModelSerializer(many=True)
+    positions = PositionNoModelSerializer(many=True)
