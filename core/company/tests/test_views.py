@@ -18,7 +18,8 @@ class CompanyAPIViewSetTestCase(BaseAPITestCase):
         url = reverse('company-get-users-email-only', kwargs=kwargs)
         request = self.factory.get(url)
         self.view.setup(request, **kwargs)
-        correct_query = User.objects.filter(companies=self.company.id).only('email').prefetch_related('positions','departments')
+        correct_query = User.objects.filter(companies=self.company.id).only('email').prefetch_related('positions',
+                                                                                                      'departments')
         self.assertQuerySetEqual(self.view.get_users_for_company(), correct_query, ordered=False)
 
     def test_get_users_email_only(self):
@@ -59,7 +60,8 @@ class ProjectAPIViewSetTestCase(BaseAPITestCase):
             queryset=Position.objects.filter(company=kwargs['company_pk']).prefetch_related('project_positions')
             .only('id', 'title', 'access_weight', 'project_positions__project_access_weight')
         )
-        correct_query = Project.objects.prefetch_related(prefetch_positions, 'users').filter(company=kwargs['company_pk'])
+        correct_query = Project.objects.prefetch_related(prefetch_positions, 'users').filter(
+            company=kwargs['company_pk'])
         self.assertQuerySetEqual(self.view.get_queryset(), correct_query)
 
     def test_get_serializer(self):
@@ -88,20 +90,20 @@ class UserInCompanyValidateTest(BaseAPITestCase):
         data1 = {'email': 'ali@gmail.com'}
         data2 = {'email': 'sdff@gmail.com'}
         response1 = self.client.post(
-            path=reverse('user-in-company', kwargs={'company_pk':self.company.id}),
+            path=reverse('user-in-company', kwargs={'company_pk': self.company.id}),
             data=data1,
             format='json'
         )
         response2 = self.client.post(
-            path=reverse('user-in-company', kwargs={'company_pk':self.company.id}),
+            path=reverse('user-in-company', kwargs={'company_pk': self.company.id}),
             data=data2,
             format='json'
         )
 
-        self.assertEqual(response1.status_code,200)
-        self.assertEqual(response1.data['status'],'User in company')
-        self.assertEqual(response2.status_code,400)
-        self.assertEqual(response2.data['status'],'User is not in company')
+        self.assertEqual(response1.status_code, 200)
+        self.assertEqual(response1.data['status'], 'User in company')
+        self.assertEqual(response2.status_code, 400)
+        self.assertEqual(response2.data['status'], 'User is not in company')
 
 
 class DepartmentAPIViewSetYestCase(BaseAPITestCase):
@@ -140,7 +142,7 @@ class DepartmentAPIViewSetYestCase(BaseAPITestCase):
                         ]
                     }
                 ],
-                'departments':[
+                'departments': [
                     {
                         "id": 2,
                         "title": "test_dep",
@@ -170,8 +172,9 @@ class DepartmentAPIViewSetYestCase(BaseAPITestCase):
             }
         ]
         mock_get.return_value = mock_response
-        
-        url = 'http://92.63.67.98:8002' + reverse('company-department-get_users_info_by_dep', kwargs={'company_pk': self.company.id, 'dep_pk': self.department.id})
+
+        url = 'http://92.63.67.98:8002' + reverse('company-department-get_users_info_by_dep',
+                                                  kwargs={'company_pk': self.company.id, 'dep_pk': self.department.id})
         response = self.client.get(url, HTTP_HOST='92.63.67.98')
 
         data_expected = [
@@ -196,5 +199,3 @@ class DepartmentAPIViewSetYestCase(BaseAPITestCase):
             }
         ]
         self.assertEqual(response.data, data_expected)
-        
-

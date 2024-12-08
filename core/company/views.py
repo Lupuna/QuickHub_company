@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.generics import GenericAPIView
 from rest_framework import status
+
 from company.serializers import (
     CompanySerializer, PositionSerializer, DepartmentSerializer,
     ProjectSerializer, ProjectPostSerializer, ProfileUserForDepSerializer)
@@ -17,7 +18,7 @@ import requests
 
 
 @extend_schema(
-    tags=["Company"]
+    tags=["Company"],
 )
 class CompanyAPIViewSet(ModelViewSet):
     serializer_class = CompanySerializer
@@ -76,7 +77,8 @@ class DepartmentAPIViewSet(ModelViewSet):
     def get_queryset(self):
         return Department.objects.prefetch_related('users').filter(company=self.kwargs['company_pk'])
 
-    @action(methods=['get'], detail=False, url_path='(?P<dep_pk>[^/.]+)/users-info-by-dep', url_name='get_users_info_by_dep')
+    @action(methods=['get'], detail=False, url_path='(?P<dep_pk>[^/.]+)/users-info-by-dep',
+            url_name='get_users_info_by_dep')
     def get_users_info_by_dep(self, request, dep_pk, company_pk):
         department = self.get_queryset().get(id=dep_pk)
         users_emails = [user.get('email', None)
