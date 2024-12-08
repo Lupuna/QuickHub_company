@@ -77,7 +77,8 @@ class CompanySerializerTest(TestCase):
         expected_users = [self.user1, self.user2]
         self.assertEqual(called_args, expected_users)
 
-    def test_new_users_creation(self):
+    @patch('company.serializers.notify_users_created')
+    def test_new_users_creation(self, notify_users_created):
         CompanySerializer()._set_users(self.instance, [{'email': 'fake_eamil@gmail.com'}], created=True)
         self.instance.users.set.assert_called_once()
         self.assertTrue(User.objects.filter(email='fake_eamil@gmail.com').exists())

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from company.utils import notify_users_created
+from company.tasks import notify_users_created
 from jwt_registration.models import User
 from jwt_registration.serializers import UserSerializer
 from company.models import Company, Position, Project, Department
@@ -24,8 +24,8 @@ class CompanySerializer(UserHandlingMixin, serializers.ModelSerializer):
             existing_user_emails = set(existing_users.values_list('email', flat=True))
             new_user_emails = set(user_emails) - existing_user_emails
             if new_user_emails:
-                new_users = User.objects.bulk_create([User(email=email, is_registered=False) for email in new_user_emails])
-                notify_users_created(new_users)
+                User.objects.bulk_create([User(email=email, is_registered=False) for email in new_user_emails])
+                notify_users_created.delay(list(new_user_emails))
                 existing_users = User.objects.filter(email__in=user_emails)
 
             if created:
