@@ -28,3 +28,17 @@ class UserHandlingMixinTests(TestCase):
         self.instance.users.add.assert_called_once()
         called_args = self.instance.users.add.call_args[0][0]
         self.assertEqual(called_args, self.user2)
+
+    def test_set_users_update_remove_users(self):
+        mixin = UserHandlingMixin()
+        mixin._set_users(self.instance, self.user_data, created=False, is_remove=True)
+        self.instance.users.remove.assert_called_once()
+        called_args = list(self.instance.users.remove.call_args[0])
+        expected_users = [self.user2, self.user3]
+        self.assertEqual(called_args, expected_users)
+
+    def test_set_users_no_user_data(self):
+        mixin = UserHandlingMixin()
+        mixin._set_users(self.instance, [], created=False, is_remove=False)
+        self.instance.users.add.assert_not_called()
+        self.instance.users.remove.assert_not_called()
