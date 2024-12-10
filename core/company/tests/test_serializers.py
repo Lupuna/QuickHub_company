@@ -176,14 +176,25 @@ class ProjectSerializerTestCase(TestCase):
             project_access_weight=ProjectPosition.WeightChoices.FULL_ACCESS
         )
         self.project.position_projects.add(self.project_position)
+        self.department = Department.objects.create(
+            title='test_title_department',
+            description='test_description',
+            company=self.company
+        )
+
+        self.instance = MagicMock()
+        self.instance.departments = MagicMock()
+        self.instance.users = MagicMock()
 
     def tearDown(self):
         post_save.connect(create_project_position, sender=Project)
 
     def test_get_positions(self, MockPositionForProjectSerializer):
         mock_positions_data = [
-            {'id': self.position1.id, 'title': self.position1.title, 'access_weight': self.position1.get_access_weight_display()},
-            {'id': self.position2.id, 'title': self.position2.title, 'access_weight': self.position2.get_access_weight_display()},
+            {'id': self.position1.id, 'title': self.position1.title,
+             'access_weight': self.position1.get_access_weight_display()},
+            {'id': self.position2.id, 'title': self.position2.title,
+             'access_weight': self.position2.get_access_weight_display()},
         ]
 
         MockPositionForProjectSerializer.return_value.data = mock_positions_data
@@ -191,3 +202,11 @@ class ProjectSerializerTestCase(TestCase):
         positions_data = serializer.get_positions(self.project)
 
         self.assertEqual(positions_data, mock_positions_data)
+
+    def test_departments_update(self, MockPositionForProjectSerializer):
+        departments_data = {'departments': [{'id': self.department.id, 'title': self.department.title}]}
+
+        serializer = ProjectSerializer(instance=self.project, data=departments_data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        updated_instance = serializer.save()
+        self.assertEqual(list(updated_instance.departments.all()), [self.department])

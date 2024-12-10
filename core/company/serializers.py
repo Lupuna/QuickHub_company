@@ -5,6 +5,7 @@ from jwt_registration.models import User
 from jwt_registration.serializers import UserSerializer
 from company.models import Company, Position, Project, Department
 from company.mixins import UserHandlingMixin
+from loguru import logger
 
 
 class CompanySerializer(UserHandlingMixin, serializers.ModelSerializer):
@@ -40,7 +41,6 @@ class CompanySerializer(UserHandlingMixin, serializers.ModelSerializer):
 
 
 class CompanyForUserSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Company
         fields = ('id', 'title')
@@ -63,7 +63,6 @@ class PositionSerializer(UserHandlingMixin, serializers.ModelSerializer):
 
 
 class ExternalAPIRequestPositionNoUsersSerializer(PositionSerializer):
-
     class Meta:
         model = Position
         fields = (
@@ -97,19 +96,60 @@ class PositionForProjectSerializer(serializers.ModelSerializer):
         return obj.get_access_weight_display()
 
 
+class DepartmentSerializer(UserHandlingMixin, serializers.ModelSerializer):
+    users = UserSerializer(many=True)
+    is_remove = serializers.BooleanField(required=False, write_only=True, default=False)
+
+    class Meta:
+        model = Department
+        fields = ('id', 'company', 'title', 'description', 'parent', 'users', 'color', 'is_remove')
+
+
+class DepartmentNoUsersSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Department
+        fields = ('id', 'title', 'description', 'parent', 'company', 'color')
+
+
+class DepartmentTitleIdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Department
+        exclude = ('id', 'title')
+
+
 class ProjectSerializer(UserHandlingMixin, serializers.ModelSerializer):
     positions = serializers.SerializerMethodField(read_only=True)
     is_remove = serializers.BooleanField(required=False, write_only=True, default=False)
+    departments = DepartmentTitleIdSerializer(many=True, required=False)
     users = UserSerializer(many=True)
 
     class Meta:
         model = Project
         fields = ('id', 'company', 'title',
-                  'description', 'positions', 'users', 'is_remove')
+                  'description', 'positions', 'users',
+                  'departments', 'color', 'priority',
+                  'creation_date', 'date_of_update',
+                  'is_remove')
 
     def get_positions(self, obj):
         positions_project = obj.positions.all()
         return PositionForProjectSerializer(positions_project, many=True).data
+
+    def to_internal_value(self, data):
+        result = super().to_internal_value(data)
+        if 'departments' in data:
+            result['departments'] = [
+                {'id': department['id']} for department in data['departments']
+            ]
+        return result
+
+    def update(self, instance, validated_data):
+        departments_ids = [department['id'] for department in validated_data.pop('departments', [])]
+        departments = Department.objects.filter(id__in=departments_ids)
+        instance = super().update(instance, validated_data)
+        instance.departments.add(*(set(departments) - set(instance.departments.all())))
+        return instance
 
 
 class ProjectPostSerializer(UserHandlingMixin, serializers.ModelSerializer):
@@ -119,22 +159,6 @@ class ProjectPostSerializer(UserHandlingMixin, serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = ('id', 'company', 'title', 'description', 'users', 'is_remove')
-
-
-class DepartmentSerializer(UserHandlingMixin, serializers.ModelSerializer):
-    users = UserSerializer(many=True)
-    is_remove = serializers.BooleanField(required=False, write_only=True, default=False)
-
-    class Meta:
-        model = Department
-        fields = ('id', 'title', 'description', 'parent', 'users', 'color', 'is_remove')
-
-
-class DepartmentNoUsersSerializer(DepartmentSerializer):
-
-    class Meta:
-        model = Department
-        fields = ('id', 'title', 'description', 'parent', 'company', 'color')
 
 
 class LinkNoModelSerializer(serializers.Serializer):
