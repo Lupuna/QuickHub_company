@@ -65,7 +65,12 @@ class ProjectAPIViewSet(ModelViewSet):
                 company=company_id).prefetch_related('project_positions')
             .only('id', 'title', 'access_weight', 'project_positions__project_access_weight')
         )
-        return Project.objects.prefetch_related(prefetch_positions, 'users').filter(company=company_id)
+        prefetch_departments = Prefetch(
+            'departments',
+            queryset=Department.objects.filter(
+                company=company_id).only('id', 'title')
+        )
+        return Project.objects.prefetch_related(prefetch_positions, prefetch_departments, 'users').filter(company=company_id)
 
 
 @extend_schema(
@@ -82,7 +87,7 @@ class DepartmentAPIViewSet(ModelViewSet):
         departments_info = departments_response.data
 
         url = settings.REGISTRATION_SERVICE_URL.format(
-            f'profile/api/v1/profile/users-info-by-company/{kwargs['company_pk']}')
+            f'profile/api/v1/profile/users-info-by-company/{kwargs["company_pk"]}')
         response = requests.get(url=url)
         if response.status_code != 200:
             return Response({'detail': "company info wasn't get"}, status=response.status_code)
@@ -105,7 +110,7 @@ class DepartmentAPIViewSet(ModelViewSet):
         department_info = department_response.data
 
         url = settings.REGISTRATION_SERVICE_URL.format(
-            f'profile/api/v1/profile/users-info-by-company/{kwargs['company_pk']}')
+            f'profile/api/v1/profile/users-info-by-company/{kwargs["company_pk"]}')
         response = requests.get(url=url)
         if response.status_code != 200:
             return Response({'detail': "company info wasn't get"}, status=response.status_code)

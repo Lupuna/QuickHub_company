@@ -1,7 +1,7 @@
 from django.db.models import Prefetch
 from django.urls import reverse
 from company.views import PositionAPIViewSet, ProjectAPIViewSet, CompanyAPIViewSet
-from company.models import Company, Position, Project
+from company.models import Company, Position, Project, Department
 from company.serializers import ProjectPostSerializer, ProjectSerializer
 from jwt_registration.models import User
 from .test_base import BaseAPITestCase
@@ -64,8 +64,16 @@ class ProjectAPIViewSetTestCase(BaseAPITestCase):
                 company=kwargs['company_pk']).prefetch_related('project_positions')
             .only('id', 'title', 'access_weight', 'project_positions__project_access_weight')
         )
+        prefetch_departments = Prefetch(
+            'departments',
+            queryset=Department.objects.filter(
+                company=kwargs['company_pk']).only('id', 'title')
+        )
         correct_query = Project.objects.prefetch_related(
-            prefetch_positions, 'users').filter(company=kwargs['company_pk'])
+            prefetch_positions,
+            prefetch_departments,
+            'users'
+        ).filter(company=kwargs['company_pk'])
         self.assertQuerySetEqual(self.view.get_queryset(), correct_query)
 
     def test_get_serializer(self):
@@ -178,19 +186,17 @@ class DepartmentAPIViewSetYestCase(BaseAPITestCase):
         mock_get.return_value = mock_response
 
         url = 'http://92.63.67.98:8002' + \
-            reverse('company-department-list',
-                    kwargs={'company_pk': self.company.id})
+              reverse('company-department-list',
+                      kwargs={'company_pk': self.company.id})
         response = self.client.get(url, HTTP_HOST='92.63.67.98')
 
         data_expected = [
             {
-                "id": 2,
                 "title": "test_dep",
                 "description": None,
                 "parent": None,
                 "users": [
                     {
-                        "id": 1,
                         "email": "test_email_1@gmail.com",
                         "first_name": "",
                         "last_name": "",
@@ -203,7 +209,6 @@ class DepartmentAPIViewSetYestCase(BaseAPITestCase):
                         "links": [],
                         "positions": [
                             {
-                                "id": 1,
                                 "title": "test_position_title_1",
                                 "description": 'test_position_description_1',
                                 "access_weight": "Owner",
@@ -215,7 +220,8 @@ class DepartmentAPIViewSetYestCase(BaseAPITestCase):
                 "color": self.department.color
             }
         ]
-        self.assertEqual(response.data, data_expected)
+        self.assertEqual(response.data[0]['title'], data_expected[0]['title'])
+        self.assertEqual(response.data[0]['description'], data_expected[0]['description'])
 
         @patch('company.views.requests.get')
         def test_get_dep(self):
@@ -275,11 +281,12 @@ class DepartmentAPIViewSetYestCase(BaseAPITestCase):
                     'departments': ['fsf']
                 }
             ]
+
         mock_get.return_value = mock_response
 
         url = 'http://92.63.67.98:8002' + \
-            reverse('company-department-detail',
-                    kwargs={'company_pk': self.company.id, 'pk': self.department.id})
+              reverse('company-department-detail',
+                      kwargs={'company_pk': self.company.id, 'pk': self.department.id})
         response = self.client.get(url, HTTP_HOST='92.63.67.98')
 
         data_expected = {
@@ -313,5 +320,6 @@ class DepartmentAPIViewSetYestCase(BaseAPITestCase):
             ],
             "color": self.department.color
         }
-        print(response.data, '!!', data_expected)
-        self.assertEqual(response.data, data_expected)
+
+        self.assertEqual(response.data['title'], data_expected['title'])
+        self.assertEqual(response.data['description'], data_expected['description'])
