@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator
 from django.db import models
 from jwt_registration.models import User
 from django.utils.translation import gettext_lazy as _
@@ -88,6 +89,11 @@ class ProjectPosition(models.Model):
 
 
 class Project(models.Model):
+    class Priority(models.IntegerChoices):
+        HIGH = 0, 'High'
+        MEDIUM = 1, 'Medium'
+        LOW = 2, 'Low'
+
     title = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
     company = models.ForeignKey(
@@ -99,6 +105,20 @@ class Project(models.Model):
         User, related_name='projects',
         help_text=_('connection with User')
     )
+    departments = models.ManyToManyField(
+        'Department', related_name='departments',
+        help_text=_('connection with Department')
+    )
+    color = models.CharField(
+        max_length=20,
+        default=f'rgb({random.randint(150, 220)},{random.randint(150, 220)},{random.randint(150, 220)})'
+    )
+    priority = models.PositiveSmallIntegerField(
+        choices=Priority.choices, default=Priority.MEDIUM,
+        validators=[MaxValueValidator(5)]
+    )
+    creation_date = models.DateField(auto_now_add=True, editable=False)
+    date_of_update = models.DateField(auto_now=True)
 
     class Meta:
         verbose_name = _("Project")

@@ -7,7 +7,7 @@ from django.test import TestCase
 from jwt_registration.models import User
 from company.models import Company, Position, ProjectPosition, Project, Department
 from company.signals import create_company_position, create_project_position
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 
 class CompanySerializerTest(TestCase):
@@ -25,6 +25,9 @@ class CompanySerializerTest(TestCase):
                 {'id': self.user2.id, 'email': self.user2.email}
             ],
         }
+        self.user_data = [{'email': self.user1.email}, {'email': self.user2.email}]
+        self.instance = MagicMock()
+        self.instance.users = MagicMock()
 
     def tearDown(self):
         m2m_changed.connect(create_company_position, sender=Company.users.through)
@@ -52,6 +55,33 @@ class CompanySerializerTest(TestCase):
 
         self.assertEqual(updated_company.title, update_data['title'])
         self.assertEqual(updated_company.description, update_data['description'])
+
+    def test_set_users_create(self):
+        CompanySerializer()._set_users(self.instance, self.user_data, created=True)
+        self.instance.users.set.assert_called_once()
+        called_args = list(self.instance.users.set.call_args[0][0])
+        expected_users = [self.user1, self.user2]
+        self.assertEqual(called_args, expected_users)
+
+    def test_set_users_update(self):
+        CompanySerializer()._set_users(self.instance, self.user_data, created=False)
+        self.instance.users.add.assert_called_once()
+        self.instance.users.add.assert_called_once()
+        called_args = self.instance.users.add.call_args[0][0]
+        self.assertEqual(called_args, self.user1)
+
+    def test_set_users_update_remove_users(self):
+        CompanySerializer()._set_users(self.instance, self.user_data, created=False, is_remove=True)
+        self.instance.users.remove.assert_called_once()
+        called_args = list(self.instance.users.remove.call_args[0])
+        expected_users = [self.user1, self.user2]
+        self.assertEqual(called_args, expected_users)
+
+    @patch('company.serializers.notify_users_created')
+    def test_new_users_creation(self, notify_users_created):
+        CompanySerializer()._set_users(self.instance, [{'email': 'fake_eamil@gmail.com'}], created=True)
+        self.instance.users.set.assert_called_once()
+        self.assertTrue(User.objects.filter(email='fake_eamil@gmail.com').exists())
 
 
 class PositionSerializerTestCase(TestCase):
@@ -146,14 +176,25 @@ class ProjectSerializerTestCase(TestCase):
             project_access_weight=ProjectPosition.WeightChoices.FULL_ACCESS
         )
         self.project.position_projects.add(self.project_position)
+        self.department = Department.objects.create(
+            title='test_title_department',
+            description='test_description',
+            company=self.company
+        )
+
+        self.instance = MagicMock()
+        self.instance.departments = MagicMock()
+        self.instance.users = MagicMock()
 
     def tearDown(self):
         post_save.connect(create_project_position, sender=Project)
 
     def test_get_positions(self, MockPositionForProjectSerializer):
         mock_positions_data = [
-            {'id': self.position1.id, 'title': self.position1.title, 'access_weight': self.position1.get_access_weight_display()},
-            {'id': self.position2.id, 'title': self.position2.title, 'access_weight': self.position2.get_access_weight_display()},
+            {'id': self.position1.id, 'title': self.position1.title,
+             'access_weight': self.position1.get_access_weight_display()},
+            {'id': self.position2.id, 'title': self.position2.title,
+             'access_weight': self.position2.get_access_weight_display()},
         ]
 
         MockPositionForProjectSerializer.return_value.data = mock_positions_data
@@ -161,3 +202,11 @@ class ProjectSerializerTestCase(TestCase):
         positions_data = serializer.get_positions(self.project)
 
         self.assertEqual(positions_data, mock_positions_data)
+
+    def test_departments_update(self, MockPositionForProjectSerializer):
+        departments_data = {'departments': [{'id': self.department.id, 'title': self.department.title}]}
+
+        serializer = ProjectSerializer(instance=self.project, data=departments_data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        updated_instance = serializer.save()
+        self.assertEqual(list(updated_instance.departments.all()), [self.department])

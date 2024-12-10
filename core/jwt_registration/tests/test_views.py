@@ -70,6 +70,17 @@ class RegistrationAPIViewSetTestCase(APITestCase):
         cache_key = self.view.get_cache_key(self.data['email'])
         self.assertIsNone(cache.get(cache_key))
 
+    def test_confirm_user_already_exists(self):
+        User.objects.create(email=self.data['email'])
+        self.view.handle_cache(self.data['email'], 'set', self.data)
+        url = reverse('user-confirm-user')
+        response = self.client.post(url, self.data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {'status': 'already_confirmed'})
+        cache_key = self.view.get_cache_key(self.data['email'])
+        self.assertIsNone(cache.get(cache_key))
+
     def test_rollback_user(self):
         self.view.handle_cache(self.data['email'], 'set', self.data)
         url = reverse('user-rollback-user')
