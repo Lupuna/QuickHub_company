@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.generics import GenericAPIView
 from rest_framework import status
+
 from company.serializers import (
     CompanySerializer, PositionSerializer, DepartmentSerializer,
     ProjectSerializer, ProjectPostSerializer, DepartmentWithUserInfoSerializer)
@@ -17,7 +18,7 @@ import requests
 
 
 @extend_schema(
-    tags=["Company"]
+    tags=["Company"],
 )
 class CompanyAPIViewSet(ModelViewSet):
     serializer_class = CompanySerializer

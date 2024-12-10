@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from rest_framework import status, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -56,8 +57,14 @@ class RegistrationAPIViewSet(
 
         user_data = self.handle_cache(email, 'get')
         if user_data:
-            self.perform_create(self.get_serializer(data=user_data))
             self.handle_cache(email, 'delete')
+
+            user = get_user_model().objects.filter(email=email)
+            if user.exists():
+                user[0].is_registered = True
+                user[0].save()
+                return Response({'status': 'already_confirmed'}, status=status.HTTP_200_OK)
+            self.perform_create(self.get_serializer(data=user_data))
             return Response({'status': 'confirmed'}, status=status.HTTP_200_OK)
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
