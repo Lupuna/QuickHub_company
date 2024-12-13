@@ -8,7 +8,7 @@ from rest_framework import status
 
 from company.serializers import (
     CompanySerializer, PositionSerializer, DepartmentSerializer,
-    ProjectSerializer, ProjectPostSerializer, DepartmentWithUserInfoSerializer)
+    ProjectSerializer, ProjectPostSerializer, )
 from users.serializers import UserEmailSerializer
 from company.models import Company, Position, Project, Department
 from jwt_registration.models import User
@@ -81,51 +81,6 @@ class DepartmentAPIViewSet(ModelViewSet):
 
     def get_queryset(self):
         return Department.objects.prefetch_related('users').filter(company=self.kwargs['company_pk'])
-
-    def list(self, request, *args, **kwargs):
-        departments_response = super().list(request, *args, **kwargs)
-        departments_info = departments_response.data
-
-        url = settings.REGISTRATION_SERVICE_URL.format(
-            f'profile/api/v1/profile/users-info-by-company/{kwargs["company_pk"]}')
-        response = requests.get(url=url)
-        if response.status_code != 200:
-            return Response({'detail': "company info wasn't get"}, status=response.status_code)
-        users_info = response.json()
-
-        for department in departments_info:
-            for user in department['users']:
-                for user_info in users_info:
-                    if user['email'] == user_info['email']:
-                        user.update(user_info)
-                        break
-
-        departments_info_ser = DepartmentWithUserInfoSerializer(
-            departments_info, many=True)
-
-        return Response(departments_info_ser.data, status=status.HTTP_200_OK)
-
-    def retrieve(self, request, *args, **kwargs):
-        department_response = super().retrieve(request, *args, **kwargs)
-        department_info = department_response.data
-
-        url = settings.REGISTRATION_SERVICE_URL.format(
-            f'profile/api/v1/profile/users-info-by-company/{kwargs["company_pk"]}')
-        response = requests.get(url=url)
-        if response.status_code != 200:
-            return Response({'detail': "company info wasn't get"}, status=response.status_code)
-        users_info = response.json()
-
-        for user in department_info['users']:
-            for user_info in users_info:
-                if user['email'] == user_info['email']:
-                    user.update(user_info)
-                    break
-
-        department_info_ser = DepartmentWithUserInfoSerializer(
-            department_info)
-
-        return Response(department_info_ser.data, status=status.HTTP_200_OK)
 
 
 @extend_schema(

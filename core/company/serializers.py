@@ -180,12 +180,3 @@ class UserInfoNoDepSerializer(serializers.Serializer):
     date_joined = serializers.CharField()
     links = LinkNoModelSerializer(many=True)
     positions = PositionNoUsersSerializer(many=True)
-
-
-class DepartmentWithUserInfoSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    title = serializers.CharField()
-    description = serializers.CharField()
-    parent = serializers.IntegerField()
-    users = UserInfoNoDepSerializer(many=True)
-    color = serializers.CharField()
