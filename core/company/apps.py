@@ -1,4 +1,5 @@
 from django.apps import AppConfig
+from rest_framework.permissions import DjangoModelPermissions
 
 
 class CompanyConfig(AppConfig):
