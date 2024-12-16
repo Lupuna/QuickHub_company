@@ -47,7 +47,8 @@ class RegistrationAPIViewSet(
     def create_user(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.handle_cache(request.data['email'], 'set', serializer.validated_data)
+        self.handle_cache(request.data['email'],
+                          'set', serializer.validated_data)
 
         return Response({'status': 'created'}, status=status.HTTP_200_OK)
 
@@ -74,5 +75,18 @@ class RegistrationAPIViewSet(
 
         self.handle_cache(email, 'delete')
         user = User.objects.filter(email=email)
-        if user.exists(): user.delete()
+        if user.exists():
+            user.delete()
         return Response({'status': 'rolled back'}, status=status.HTTP_200_OK)
+
+    @action(methods=['post'], detail=False, url_path='update')
+    def update_important_data(self, request, *args, **kwargs):
+        user_email = request.data.get('email', None)
+        if not user_email:
+            return Response({"error": "Email or password wasn't get"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects.get(email=user_email)
+        user.email = user_email
+        user.save()
+
+        return Response({'status': 'email updated'}, status=status.HTTP_200_OK)
