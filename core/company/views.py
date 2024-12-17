@@ -13,8 +13,6 @@ from users.serializers import UserEmailSerializer
 from company.models import Company, Position, Project, Department
 from jwt_registration.models import User
 from users.serializers import OnlyUserEmailSerializer
-from django.conf import settings
-import requests
 
 
 @extend_schema(
