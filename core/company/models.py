@@ -130,12 +130,6 @@ class Project(models.Model):
         return self.title
 
 
-class UserDepartment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_departments')
-    department = models.ForeignKey('Department', on_delete=models.CASCADE, related_name='department_users')
-    is_owner = models.BooleanField(default=False)
-
-
 class Department(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
@@ -153,6 +147,10 @@ class Department(models.Model):
     color = models.CharField(
         max_length=20,
         default=f'rgb({random.randint(150, 220)},{random.randint(150, 220)},{random.randint(150, 220)})'
+    )
+    users = models.ManyToManyField(
+        User, related_name='departments',
+        help_text=_('connection with User')
     )
     owner = models.EmailField(null=True, blank=True)
 
