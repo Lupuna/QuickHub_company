@@ -107,7 +107,7 @@ class Project(models.Model):
     )
     departments = models.ManyToManyField(
         'Department', related_name='departments',
-        help_text=_('connection with Department')
+        help_text=_('connection with Department'),
     )
     color = models.CharField(
         max_length=20,
@@ -119,6 +119,7 @@ class Project(models.Model):
     )
     creation_date = models.DateField(auto_now_add=True, editable=False)
     date_of_update = models.DateField(auto_now=True)
+    owner = models.EmailField(null=True, blank=True)
 
     class Meta:
         verbose_name = _("Project")
@@ -127,6 +128,12 @@ class Project(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class UserDepartment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_departments')
+    department = models.ForeignKey('Department', on_delete=models.CASCADE, related_name='department_users')
+    is_owner = models.BooleanField(default=False)
 
 
 class Department(models.Model):
@@ -143,12 +150,11 @@ class Department(models.Model):
         related_name='children',
         help_text=_('connection with department parent')
     )
-    users = models.ManyToManyField(
-        User, related_name='departments',
-        help_text=_('connection with User')
+    color = models.CharField(
+        max_length=20,
+        default=f'rgb({random.randint(150, 220)},{random.randint(150, 220)},{random.randint(150, 220)})'
     )
-    color = models.CharField(max_length=20,
-                             default=f'rgb({random.randint(150, 220)},{random.randint(150, 220)},{random.randint(150, 220)})')
+    owner = models.EmailField(null=True, blank=True)
 
     class Meta:
         verbose_name = _("Department")
