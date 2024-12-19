@@ -102,14 +102,14 @@ class DepartmentSerializer(UserHandlingMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Department
-        fields = ('id', 'company', 'title', 'description', 'parent', 'users', 'color', 'is_remove')
+        fields = ('id', 'company', 'title', 'description', 'parent', 'users', 'color', 'is_remove', 'owner')
 
 
 class DepartmentNoUsersSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Department
-        fields = ('id', 'title', 'description', 'parent', 'company', 'color')
+        fields = ('id', 'title', 'description', 'parent', 'company', 'color', 'owner')
 
 
 class DepartmentTitleIdSerializer(serializers.ModelSerializer):
@@ -122,7 +122,7 @@ class ProjectSerializer(UserHandlingMixin, serializers.ModelSerializer):
     positions = serializers.SerializerMethodField(read_only=True)
     is_remove = serializers.BooleanField(required=False, write_only=True, default=False)
     departments = DepartmentTitleIdSerializer(many=True, required=False)
-    users = UserSerializer(many=True)
+    users = UserSerializer(many=True, required=False)
 
     class Meta:
         model = Project
@@ -130,7 +130,7 @@ class ProjectSerializer(UserHandlingMixin, serializers.ModelSerializer):
                   'description', 'positions', 'users',
                   'departments', 'color', 'priority',
                   'creation_date', 'date_of_update',
-                  'is_remove')
+                  'is_remove', 'owner')
 
     def get_positions(self, obj):
         positions_project = obj.positions.all()

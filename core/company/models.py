@@ -107,7 +107,7 @@ class Project(models.Model):
     )
     departments = models.ManyToManyField(
         'Department', related_name='departments',
-        help_text=_('connection with Department')
+        help_text=_('connection with Department'),
     )
     color = models.CharField(
         max_length=20,
@@ -119,6 +119,7 @@ class Project(models.Model):
     )
     creation_date = models.DateField(auto_now_add=True, editable=False)
     date_of_update = models.DateField(auto_now=True)
+    owner = models.EmailField(null=True, blank=True)
 
     class Meta:
         verbose_name = _("Project")
@@ -143,12 +144,15 @@ class Department(models.Model):
         related_name='children',
         help_text=_('connection with department parent')
     )
+    color = models.CharField(
+        max_length=20,
+        default=f'rgb({random.randint(150, 220)},{random.randint(150, 220)},{random.randint(150, 220)})'
+    )
     users = models.ManyToManyField(
         User, related_name='departments',
         help_text=_('connection with User')
     )
-    color = models.CharField(max_length=20,
-                             default=f'rgb({random.randint(150, 220)},{random.randint(150, 220)},{random.randint(150, 220)})')
+    owner = models.EmailField(null=True, blank=True)
 
     class Meta:
         verbose_name = _("Department")
