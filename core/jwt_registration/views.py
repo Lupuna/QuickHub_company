@@ -74,11 +74,12 @@ class RegistrationAPIViewSet(
 
             user = get_user_model().objects.filter(email=email)
             if user.exists():
-                user[0].is_registered = True
-                user[0].email = user_data['new_email']
-                user[0].save()
+                user = user[0]
+                user.is_registered = True
+                user.email = user_data['new_email']
+                user.save()
                 return Response({'status': 'Email update confirmed'}, status=status.HTTP_200_OK)
-    
+
             self.perform_create(self.get_serializer(data=user_data))
             return Response({'status': 'Creation confirmed'}, status=status.HTTP_200_OK)
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -100,14 +101,9 @@ class RegistrationAPIViewSet(
                 user_after_update[0].save()
                 return Response({'data': 'Update confirm rolled back(made email old)'}, status=status.HTTP_200_OK)
             return Response({"data": "Update confirm rolled back"}, status=status.HTTP_200_OK)
-        
+
         created_user = User.objects.filter(email=email)
         if created_user:
             created_user[0].delete()
-            return Response({'data':"Create rolled back(user deleted)"}, status=status.HTTP_200_OK)
-        return Response({"data":"Create rolled back"}, status=status.HTTP_200_OK)
-
-
-
-
-
+            return Response({'data': "Create rolled back(user deleted)"}, status=status.HTTP_200_OK)
+        return Response({"data": "Create rolled back"}, status=status.HTTP_200_OK)
