@@ -163,3 +163,24 @@ EMAIL_ADMIN = EMAIL_HOST_USER
 CACHE_LIFE_TIME = 60*60
 USER_TWO_COMMITS_CACHE_KEY = 'two_commits_{email}'
 REGISTRATION_SERVICE_URL = 'http://92.63.67.98:8000/{}'
+COMPANY_SERVICE_URL = 'http://92.63.67.98:8002/company-service/{}'
+TASK_SERVICE_URL = 'http://92.63.67.98:8004/task-service/{}'
+
+TWO_COMMITS_CONF = {
+    'services': {
+        'company': {
+            "host": COMPANY_SERVICE_URL,
+            'create': COMPANY_SERVICE_URL.format('api/v1/company/registration/users/create/'),
+            'update': COMPANY_SERVICE_URL.format('api/v1/company/registration/users/update/'),
+            'confirm': COMPANY_SERVICE_URL.format('api/v1/company/registration/users/confirm/'),
+            'rollback': COMPANY_SERVICE_URL.format('api/v1/company/registration/users/rollback/')
+        },
+        'tasks': {
+            "host": TASK_SERVICE_URL,
+            'create': TASK_SERVICE_URL.format('api/v1/task-projects/create/'),
+            'update': TASK_SERVICE_URL.format('api/v1/task-projects/update/'),
+            'confirm': TASK_SERVICE_URL.format('api/v1/task-projects/confirm/'),
+            'rollback': TASK_SERVICE_URL.format('/api/v1/task-projects/rollback/')
+        }
+    },
+}

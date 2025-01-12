@@ -2,10 +2,11 @@ from django.db.models import Prefetch
 from django.urls import reverse
 from company.views import PositionAPIViewSet, ProjectAPIViewSet, CompanyAPIViewSet
 from company.models import Company, Position, Project, Department
-from company.serializers import ProjectPostSerializer, ProjectSerializer
+from company.serializers import ProjectPostSerializer, ProjectSerializer, UserSerializer
 from jwt_registration.models import User
 from .test_base import BaseAPITestCase
 from unittest.mock import patch, MagicMock
+from core.exeptions import TwoCommitsError
 
 
 class CompanyAPIViewSetTestCase(BaseAPITestCase):
@@ -92,6 +93,28 @@ class ProjectAPIViewSetTestCase(BaseAPITestCase):
             self.assertEqual(self.view.get_serializer_class(),
                              ProjectSerializer)
 
+    @patch('company.utils.TwoCommitsPattern.two_commits_operation')
+    def test_two_commits_ok(self, mock_two_commits_operation):
+        mock_two_commits_operation.return_value = {'tasks': 200}
+        url = reverse('company-project-list', kwargs={'company_pk': 1})
+        response = self.client.post(
+            url, {'company': self.company.id, 'title': 'test', 'description': 'a', 'users': [{'email': 'test_email_1@gmail.com'}]}, format='json')
+
+        self.assertEqual(response.data, {'id': 1, 'company': self.company.id, 'title': 'test',
+                         'description': 'a', 'users': [{'id': 1, 'email': 'test_email_1@gmail.com'}]})
+        self.assertTrue(Project.objects.filter(id=1).exists())
+
+    @patch('company.utils.CreateTwoCommitsPattern._post_request_to_external_api')
+    @patch('company.utils.CreateTwoCommitsPattern._rollback_operation')
+    def test_two_commits_not_ok(self, mock_roll, mock_two_commits_operation):
+        mock_two_commits_operation.return_value = {'tasks': 500}
+
+        url = reverse('company-project-list', kwargs={'company_pk': 1})
+        response = self.client.post(
+            url, {'company': self.company.id, 'title': 'test', 'description': 'a', 'users': [{'email': 'test_email_1@gmail.com'}]}, format='json')
+        mock_roll.assert_called_once()
+        self.assertFalse(Project.objects.filter(id=1).exists())
+
 
 class UserInCompanyValidateTest(BaseAPITestCase):
     def setUp(self):
@@ -104,12 +127,14 @@ class UserInCompanyValidateTest(BaseAPITestCase):
         data1 = {'email': 'ali@gmail.com'}
         data2 = {'email': 'sdff@gmail.com'}
         response1 = self.client.post(
-            path=reverse('user-in-company', kwargs={'company_pk': self.company.id}),
+            path=reverse('user-in-company',
+                         kwargs={'company_pk': self.company.id}),
             data=data1,
             format='json'
         )
         response2 = self.client.post(
-            path=reverse('user-in-company', kwargs={'company_pk': self.company.id}),
+            path=reverse('user-in-company',
+                         kwargs={'company_pk': self.company.id}),
             data=data2,
             format='json'
         )

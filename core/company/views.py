@@ -13,6 +13,8 @@ from users.serializers import UserEmailSerializer
 from company.models import Company, Position, Project, Department
 from jwt_registration.models import User
 from users.serializers import OnlyUserEmailSerializer
+from django.db import transaction
+from company.utils import *
 
 
 @extend_schema(
@@ -69,6 +71,18 @@ class ProjectAPIViewSet(ModelViewSet):
                 company=company_id).only('id', 'title')
         )
         return Project.objects.prefetch_related(prefetch_positions, prefetch_departments, 'users').filter(company=company_id)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            with transaction.atomic():
+                project = serializer.save()
+                create = CreateTwoCommitsPattern(
+                    data={'project': project.id}, service='tasks')
+                create.two_commits_operation()
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response({'error': 'Data is not valid', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @extend_schema(
