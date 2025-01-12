@@ -100,9 +100,9 @@ class ProjectAPIViewSetTestCase(BaseAPITestCase):
         response = self.client.post(
             url, {'company': self.company.id, 'title': 'test', 'description': 'a', 'users': [{'email': 'test_email_1@gmail.com'}]}, format='json')
 
-        self.assertEqual(response.data, {'id': 1, 'company': self.company.id, 'title': 'test',
-                         'description': 'a', 'users': [{'id': 1, 'email': 'test_email_1@gmail.com'}]})
-        self.assertTrue(Project.objects.filter(id=1).exists())
+        self.assertEqual(response.data, {'id': 2, 'company': self.company.id, 'title': 'test',
+                         'description': 'a', 'users': [{'id': 5, 'email': 'test_email_1@gmail.com'}]})
+        self.assertTrue(Project.objects.filter(id=2).exists())
 
     @patch('company.utils.CreateTwoCommitsPattern._post_request_to_external_api')
     @patch('company.utils.CreateTwoCommitsPattern._rollback_operation')
