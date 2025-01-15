@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.generics import GenericAPIView
 from rest_framework import status
+from elasticsearch_dsl import Q
 
 from company.serializers import (
     CompanySerializer, PositionSerializer, DepartmentSerializer,
@@ -13,6 +14,7 @@ from users.serializers import UserEmailSerializer
 from company.models import Company, Position, Project, Department
 from jwt_registration.models import User
 from users.serializers import OnlyUserEmailSerializer
+from company.documents import CompanyDocument, ProjectDocument
 
 
 @extend_schema(
@@ -21,6 +23,15 @@ from users.serializers import OnlyUserEmailSerializer
 class CompanyAPIViewSet(ModelViewSet):
     serializer_class = CompanySerializer
     queryset = Company.objects.prefetch_related('users').all()
+
+    def list(self, request):
+        if request.query_params:
+            email = request.query_params["email"]
+            query = Q("nested", path="users", query=Q("match", users__email=email))
+            result = CompanyDocument.search().filter(query).to_queryset()
+            return Response(CompanySerializer(result, many=True).data)
+        else:
+            return super().list(request)
 
     def get_users_for_company(self):
         company = self.kwargs['pk']
@@ -39,6 +50,15 @@ class CompanyAPIViewSet(ModelViewSet):
 )
 class PositionAPIViewSet(ModelViewSet):
     serializer_class = PositionSerializer
+
+    def list(self, request):
+        if request.query_params:
+            email = request.query_params["email"]
+            query = Q("nested", path="users", query=Q("match", users__email=email))
+            result = ProjectDocument.search().filter(query).to_queryset()
+            return Response(PositionSerializer(result, many=True).data)
+        else:
+            return super().list(request)
 
     def get_queryset(self):
         return Position.objects.prefetch_related('users').filter(company=self.kwargs['company_pk'])

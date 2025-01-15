@@ -35,10 +35,11 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'drf_spectacular',
     'corsheaders',
+    'django_elasticsearch_dsl',
 
     'company.apps.CompanyConfig',
     'jwt_registration.apps.JwtRegistrationConfig',
-    'users.apps.UsersConfig'
+    'users.apps.UsersConfig',
 ]
 
 MIDDLEWARE = [
@@ -84,6 +85,8 @@ DATABASES = {
         'PORT': '5433',
     }
 }
+
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -137,6 +140,12 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'API Schema',
     'DESCRIPTION': 'Guide for the REST API',
     'VERSION': '1.0.0',
+}
+
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': 'http://elasticsearch:9200',
+    }
 }
 
 INTERNAL_IPS = [

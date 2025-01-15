@@ -55,6 +55,16 @@ services:
       - "6380:6380"
     command: --port 6380
 
+  elasticsearch:
+    image: elasticsearch:8.16.2
+    hostname: elasticsearch
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+
   worker1:
     <<: *worker-template
     hostname: worker1
