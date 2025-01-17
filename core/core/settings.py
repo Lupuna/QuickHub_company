@@ -184,3 +184,5 @@ TWO_COMMITS_CONF = {
         }
     },
 }
+
+TOKEN_CODE_WORD = 'Bearer'
