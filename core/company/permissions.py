@@ -64,7 +64,6 @@ class PermissionCompany(BaseWeightPermission):
         2: {"view": True, "add": True, "change": False, "delete": False},
         3: {"view": True, "add": True, "change": False, "delete": False},
         4: {"view": True, "add": True, "change": False, "delete": False},
-        5: {"view": True, "add": True, "change": False, "delete": False},
     }
 
     def get_position_in_company(self, company_id, user_email):
@@ -82,11 +81,11 @@ class PermissionCompany(BaseWeightPermission):
         return False
 
     def has_object_permission(self, request, view, obj):
-        # if request.method == 'GET':
-        #     position = 0
-        # else:
-        position = self.get_position_in_company(
-            view.kwargs.get('pk'), self.get_user_email(request))
+        if request.method == 'GET':
+            position = 0
+        else:
+            position = self.get_position_in_company(
+                view.kwargs.get('pk'), self.get_user_email(request))
 
         if self.check_access(request.method, position):
             return True
@@ -95,10 +94,9 @@ class PermissionCompany(BaseWeightPermission):
 
 class PermissionProject(PermissionCompany):
     priority_permissions = {
-        0: {"view": True, "add": True, "change": True, "delete": True},
         1: {"view": True, "add": True, "change": True, "delete": True},
-        2: {"view": True, "add": True, "change": True, "delete": False},
-        3: {"view": True, "add": False, "change": False, "delete": False},
+        2: {"view": True, "add": True, "change": True, "delete": True},
+        3: {"view": True, "add": True, "change": True, "delete": False},
         4: {"view": True, "add": False, "change": False, "delete": False},
         5: {"view": True, "add": False, "change": False, "delete": False},
     }
@@ -127,23 +125,24 @@ class PermissionProject(PermissionCompany):
         return False
 
 
-class PermissionDepartment(PermissionCompany):
+class PermissionDepartment(PermissionProject):
     priority_permissions = {
         0: {"view": True, "add": True, "change": True, "delete": True},
         1: {"view": True, "add": True, "change": True, "delete": True},
         2: {"view": True, "add": False, "change": False, "delete": False},
         3: {"view": True, "add": False, "change": False, "delete": False},
         4: {"view": True, "add": False, "change": False, "delete": False},
-        5: {"view": True, "add": False, "change": False, "delete": False},
     }
 
+    def has_object_permission(self, request, view, obj):
+        return self.has_permission(request, view)
 
-class PermissionPosition(PermissionCompany):
+
+class PermissionPosition(PermissionDepartment):
     priority_permissions = {
         0: {"view": True, "add": True, "change": True, "delete": True},
         1: {"view": True, "add": True, "change": True, "delete": True},
         2: {"view": True, "add": False, "change": False, "delete": False},
         3: {"view": True, "add": False, "change": False, "delete": False},
         4: {"view": True, "add": False, "change": False, "delete": False},
-        5: {"view": True, "add": False, "change": False, "delete": False},
     }
