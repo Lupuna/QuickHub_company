@@ -1,4 +1,4 @@
-from django.db.models import Q, Max
+from django.db.models import Q, Max, F
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import BasePermission
 from company.models import Position
@@ -12,7 +12,6 @@ class BaseWeightPermission(BasePermission):
     }
 
     priority_permissions = {
-        0: {**default_permissions},
         1: {**default_permissions},
         2: {**default_permissions},
         3: {**default_permissions},
@@ -59,11 +58,11 @@ class BaseWeightPermission(BasePermission):
 
 class PermissionCompany(BaseWeightPermission):
     priority_permissions = {
-        0: {"view": True, "add": True, "change": True, "delete": True},
-        1: {"view": True, "add": True, "change": True, "delete": False},
-        2: {"view": True, "add": True, "change": False, "delete": False},
+        1: {"view": True, "add": True, "change": True, "delete": True},
+        2: {"view": True, "add": True, "change": True, "delete": False},
         3: {"view": True, "add": True, "change": False, "delete": False},
         4: {"view": True, "add": True, "change": False, "delete": False},
+        5: {"view": True, "add": True, "change": False, "delete": False},
     }
 
     def get_position_in_company(self, company_id, user_email):
@@ -74,15 +73,8 @@ class PermissionCompany(BaseWeightPermission):
         raise PermissionDenied('User has no position in provided company')
 
     def has_permission(self, request, view):
-        position = 0
-
-        if self.check_access(request.method, position):
-            return True
-        return False
-
-    def has_object_permission(self, request, view, obj):
-        if request.method == 'GET':
-            position = 0
+        if request.method in ['GET', 'POST']:
+            position = 1
         else:
             position = self.get_position_in_company(
                 view.kwargs.get('pk'), self.get_user_email(request))
@@ -109,17 +101,12 @@ class PermissionProject(PermissionCompany):
         raise PermissionDenied('User has no permissons')
 
     def has_permission(self, request, view):
-        position = self.get_position_in_company(
-            view.kwargs.get('company_pk'), self.get_user_email(request))
-
-        if self.check_access(request.method, position):
-            return True
-        return False
-
-    def has_object_permission(self, request, view, obj):
-        position = self.get_position_in_project(view.kwargs.get(
-            'company_pk'), view.kwargs.get('pk'), self.get_user_email(request))
-
+        if request.method in ['GET', 'POST']:
+            position = self.get_position_in_company(
+                view.kwargs.get('company_pk'), self.get_user_email(request))
+        else:
+            position = self.get_position_in_project(view.kwargs.get(
+                'company_pk'), view.kwargs.get('pk'), self.get_user_email(request))
         if self.check_access(request.method, position):
             return True
         return False
@@ -127,11 +114,11 @@ class PermissionProject(PermissionCompany):
 
 class PermissionDepartment(PermissionProject):
     priority_permissions = {
-        0: {"view": True, "add": True, "change": True, "delete": True},
         1: {"view": True, "add": True, "change": True, "delete": True},
-        2: {"view": True, "add": False, "change": False, "delete": False},
+        2: {"view": True, "add": True, "change": True, "delete": True},
         3: {"view": True, "add": False, "change": False, "delete": False},
         4: {"view": True, "add": False, "change": False, "delete": False},
+        5: {"view": True, "add": False, "change": False, "delete": False},
     }
 
     def has_object_permission(self, request, view, obj):
@@ -140,9 +127,9 @@ class PermissionDepartment(PermissionProject):
 
 class PermissionPosition(PermissionDepartment):
     priority_permissions = {
-        0: {"view": True, "add": True, "change": True, "delete": True},
         1: {"view": True, "add": True, "change": True, "delete": True},
-        2: {"view": True, "add": False, "change": False, "delete": False},
+        2: {"view": True, "add": True, "change": True, "delete": True},
         3: {"view": True, "add": False, "change": False, "delete": False},
         4: {"view": True, "add": False, "change": False, "delete": False},
+        5: {"view": True, "add": False, "change": False, "delete": False},
     }

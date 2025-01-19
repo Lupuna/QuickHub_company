@@ -4,39 +4,56 @@ from jwt_registration.models import User
 from company.models import Company, Position, Project
 from company.signals import create_company_position, create_project_position
 from rest_framework.exceptions import ValidationError
+from rest_framework.test import APIClient
+from company.tests.test_base import BaseAPITestCase
+from django.urls import reverse
 
 
-class CreateCompanyPositionTestCase(TestCase):
-
-    def setUp(self):
-        self.user = User.objects.create(email='test_email@gmail.com')
-
-        self.company_data1 = {
-            'title': 'test_company_title',
-            'description': 'test_company_description_1',
+class SignalTestCase(BaseAPITestCase):
+    def test_create_company_user_not_already_owner(self):
+        url = reverse('company-list')
+        data = {
+            'title': 'hh',
+            'users': [
+                {
+                    "email": self.user3.email
+                }
+            ],
+            'description': 'no',
         }
-        self.company_data2 = {
-            'title': 'test_company_title',
-            'description': 'test_company_description_2',
-        }
-        self.kwargs={
-            "pk_set": [self.user.id]
-        }
-        self.company1 = Company.objects.create(**self.company_data1)
-        self.company2 = Company.objects.create(**self.company_data2)
-        self.id_company2 = self.company2.id
+        self.assertFalse(Position.objects.filter(
+            users__email=self.user3.email))
+        response = self.client.post(
+            url, data=data, format='json', HTTP_AUTHORIZATION=f'Bearer {self.token3}')
+        self.assertTrue(Position.objects.filter(
+            users__email=self.user3.email))
 
-
-    def test_create_company_position_signal(self):
-        self.company1.users.add(self.user)
-        create_company_position(sender=Company.users.through, instance=self.company1, action='post_add',**self.kwargs)
-        position = Position.objects.get(company=self.company1)
-        self.assertEqual(position.users.count(), 1)
-        self.assertTrue(position.users.filter(id=self.user.id).exists())
-        with self.assertRaises(ValidationError):
-            create_company_position(sender=Company.users.through, instance=self.company2, action='pre_add',**self.kwargs)
-            self.company2.users.add(self.user)
-        self.assertFalse(Company.objects.filter(id=self.id_company2).exists())
+    def test_create_company_user_already_owner(self):
+        url = reverse('company-list')
+        data1 = {
+            'title': 'hh',
+            'users': [
+                {
+                    "email": self.user3.email
+                }
+            ],
+            'description': 'no',
+        }
+        response = self.client.post(
+            url, data=data1, format='json', HTTP_AUTHORIZATION=f'Bearer {self.token3}')
+        data2 = {
+            'title': 'hh',
+            'users': [
+                {
+                    "email": self.user3.email
+                }
+            ],
+            'description': 'opa',
+        }
+        response = self.client.post(
+            url, data=data2, format='json', HTTP_AUTHORIZATION=f'Bearer {self.token3}')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data, {'error': 'data_update is required'})
 
 
 class CreateProjectPositionTestCase(TestCase):
@@ -69,9 +86,12 @@ class CreateProjectPositionTestCase(TestCase):
         project = Project.objects.create(**self.project_data)
 
         with self.assertNumQueries(2):
-            create_project_position(sender=Project, instance=project, created=True)
+            create_project_position(
+                sender=Project, instance=project, created=True)
 
         self.assertEqual(project.positions.count(), 2)
-        self.assertTrue(project.positions.filter(id=self.position1.id).exists())
-        self.assertTrue(project.positions.filter(id=self.position2.id).exists())
+        self.assertTrue(project.positions.filter(
+            id=self.position1.id).exists())
+        self.assertTrue(project.positions.filter(
+            id=self.position2.id).exists())
         self.assertEqual(project.position_projects.count(), 2)
