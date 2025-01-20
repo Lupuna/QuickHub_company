@@ -4,9 +4,10 @@ from company.views import PositionAPIViewSet, ProjectAPIViewSet, CompanyAPIViewS
 from company.models import Company, Position, Project, Department
 from company.serializers import ProjectPostSerializer, ProjectSerializer, UserSerializer
 from jwt_registration.models import User
-from .test_base import BaseAPITestCase
+from company.tests.test_base import BaseAPITestCase
 from unittest.mock import patch, MagicMock
 from core.exeptions import TwoCommitsError
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class CompanyAPIViewSetTestCase(BaseAPITestCase):
@@ -96,9 +97,10 @@ class ProjectAPIViewSetTestCase(BaseAPITestCase):
     @patch('company.utils.TwoCommitsPattern.two_commits_operation')
     def test_two_commits_ok(self, mock_two_commits_operation):
         mock_two_commits_operation.return_value = {'tasks': 200}
-        url = reverse('company-project-list', kwargs={'company_pk': 1})
+        url = reverse('company-project-list',
+                      kwargs={'company_pk': self.company.id})
         response = self.client.post(
-            url, {'company': self.company.id, 'title': 'test', 'description': 'a', 'users': [{'email': 'test_email_1@gmail.com'}]}, format='json')
+            url, {'company': self.company.id, 'title': 'test', 'description': 'a', 'users': [{'email': 'test_email_1@gmail.com'}]}, format='json', HTTP_AUTHORIZATION=f'Bearer {self.token1}')
         ser = ProjectPostSerializer(data={'company': self.company.id, 'title': 'test', 'description': 'a', 'users': [
                                     {'email': 'test_email_1@gmail.com'}]})
         project = Project.objects.get(title='test')
@@ -110,9 +112,10 @@ class ProjectAPIViewSetTestCase(BaseAPITestCase):
     def test_two_commits_not_ok(self, mock_roll, mock_two_commits_operation):
         mock_two_commits_operation.return_value = {'tasks': 500}
 
-        url = reverse('company-project-list', kwargs={'company_pk': 1})
+        url = reverse('company-project-list',
+                      kwargs={'company_pk': self.company.id})
         response = self.client.post(
-            url, {'company': self.company.id, 'title': 'test', 'description': 'a', 'users': [{'email': 'test_email_1@gmail.com'}]}, format='json')
+            url, {'company': self.company.id, 'title': 'test', 'description': 'a', 'users': [{'email': 'test_email_1@gmail.com'}]}, format='json', HTTP_AUTHORIZATION=f'Bearer {self.token1}')
         mock_roll.assert_called_once()
         self.assertFalse(Project.objects.filter(id=1).exists())
 

@@ -15,6 +15,7 @@ from jwt_registration.models import User
 from users.serializers import OnlyUserEmailSerializer
 from django.db import transaction
 from company.utils import *
+from company.permissions import PermissionCompany, PermissionProject, PermissionDepartment, PermissionPosition
 
 
 @extend_schema(
@@ -23,6 +24,7 @@ from company.utils import *
 class CompanyAPIViewSet(ModelViewSet):
     serializer_class = CompanySerializer
     queryset = Company.objects.prefetch_related('users').all()
+    permission_classes = [PermissionCompany, ]
 
     def get_users_for_company(self):
         company = self.kwargs['pk']
@@ -41,6 +43,7 @@ class CompanyAPIViewSet(ModelViewSet):
 )
 class PositionAPIViewSet(ModelViewSet):
     serializer_class = PositionSerializer
+    permission_classes = [PermissionPosition, ]
 
     def get_queryset(self):
         return Position.objects.prefetch_related('users').filter(company=self.kwargs['company_pk'])
@@ -51,6 +54,7 @@ class PositionAPIViewSet(ModelViewSet):
 )
 class ProjectAPIViewSet(ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete']
+    permission_classes = [PermissionProject, ]
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -90,6 +94,7 @@ class ProjectAPIViewSet(ModelViewSet):
 )
 class DepartmentAPIViewSet(ModelViewSet):
     serializer_class = DepartmentSerializer
+    permission_classes = [PermissionDepartment, ]
 
     def get_queryset(self):
         return Department.objects.prefetch_related('users').filter(company=self.kwargs['company_pk'])
