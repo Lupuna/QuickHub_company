@@ -1,5 +1,7 @@
 from django.db.models import Prefetch
 from django.urls import reverse
+from rest_framework.request import Request
+
 from company.views import PositionAPIViewSet, ProjectAPIViewSet, CompanyAPIViewSet
 from company.models import Company, Position, Project, Department
 from company.serializers import ProjectPostSerializer, ProjectSerializer
@@ -29,6 +31,27 @@ class CompanyAPIViewSetTestCase(BaseAPITestCase):
         response = self.client.get(url)
         self.assertTrue(
             all(user['email'] for user in response if user in self.company.users.all()))
+
+    def test_without_query_params(self):
+        url = reverse('company-list')
+        response = self.client.get(url)
+        self.assertEqual(
+            len(response.data), 2
+        )
+
+    def test_with_query_params(self):
+        url = reverse('company-list')
+        response = self.client.get(url, {"email": self.user2.email})
+        self.assertEqual(
+            len(response.data), 1
+        )
+        emails = [
+            item["email"] for item in response.data[0]["users"]
+        ]
+        self.assertIn(
+            self.user2.email, emails
+        )
+
 
 
 class PositionAPIViewSetTestCase(BaseAPITestCase):
@@ -91,6 +114,28 @@ class ProjectAPIViewSetTestCase(BaseAPITestCase):
             self.view.setup(request, **kwargs)
             self.assertEqual(self.view.get_serializer_class(),
                              ProjectSerializer)
+
+    def test_without_query_params(self):
+        kwargs = {'company_pk': self.company.id}
+        url = reverse('company-project-list', kwargs=kwargs)
+        response = self.client.get(url)
+        self.assertEqual(
+            len(response.data), 2
+        )
+
+    def test_with_query_params(self):
+        kwargs = {'company_pk': self.company.id}
+        url = reverse('company-project-list', kwargs=kwargs)
+        response = self.client.get(url, {"email": self.user2.email})
+        self.assertEqual(
+            len(response.data), 1
+        )
+        emails = [
+            item["email"] for item in response.data[0]["users"]
+        ]
+        self.assertIn(
+            self.user2.email, emails
+        )
 
 
 class UserInCompanyValidateTest(BaseAPITestCase):

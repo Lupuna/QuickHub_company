@@ -25,6 +25,7 @@ services:
       - "8001:8001"
     volumes:
       - ./core:/core
+    entrypoint: /core/entrypoint.sh
     environment:
       - DB_HOST=database
       - DB_NAME=dbname
@@ -35,6 +36,8 @@ services:
       sh -c "python manage.py runserver 0.0.0.0:8001"
     depends_on:
       - database
+      - elasticsearch
+      - redis
 
   database:
     image: postgres:14.6-alpine
@@ -47,6 +50,8 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     command: -p 5433
+    depends_on:
+      - elasticsearch
 
   redis:
     image: redis:7.0.5-alpine
@@ -57,13 +62,23 @@ services:
 
   elasticsearch:
     image: elasticsearch:8.16.2
-    hostname: elasticsearch
     ports:
       - 9200:9200
       - 9300:9300
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+
+#  kibana:
+#    image: docker.elastic.co/kibana/kibana:8.16.3
+#    environment:
+#      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+#    ports:
+#      - "5601:5601"
+#    depends_on:
+#      - elasticsearch
 
   worker1:
     <<: *worker-template
@@ -74,3 +89,4 @@ services:
 
 volumes:
   db_data:
+  esdata:

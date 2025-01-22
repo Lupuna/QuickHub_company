@@ -11,4 +11,3 @@ class UserDocument(Document):
 
     class Django:
         model = User
-        fields = []

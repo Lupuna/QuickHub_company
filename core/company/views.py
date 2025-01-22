@@ -51,15 +51,6 @@ class CompanyAPIViewSet(ModelViewSet):
 class PositionAPIViewSet(ModelViewSet):
     serializer_class = PositionSerializer
 
-    def list(self, request):
-        if request.query_params:
-            email = request.query_params["email"]
-            query = Q("nested", path="users", query=Q("match", users__email=email))
-            result = ProjectDocument.search().filter(query).to_queryset()
-            return Response(PositionSerializer(result, many=True).data)
-        else:
-            return super().list(request)
-
     def get_queryset(self):
         return Position.objects.prefetch_related('users').filter(company=self.kwargs['company_pk'])
 
@@ -74,6 +65,15 @@ class ProjectAPIViewSet(ModelViewSet):
         if self.request.method == 'POST':
             return ProjectPostSerializer
         return ProjectSerializer
+
+    def list(self, request, *args, **kwargs):
+        if request.query_params:
+            email = request.query_params["email"]
+            query = Q("nested", path="users", query=Q("match", users__email=email))
+            result = ProjectDocument.search().filter(query).to_queryset()
+            return Response(ProjectSerializer(result, many=True).data)
+        else:
+            return super().list(request)
 
     def get_queryset(self):
         company_id = self.kwargs.get('company_pk')

@@ -18,7 +18,8 @@ class CompanyDocument(Document):
         fields = [
             'title',
         ]
-        related_models = [User]
+        #related_models = [User]
+
 
 
 @registry.register_document
@@ -35,5 +36,5 @@ class ProjectDocument(Document):
         fields = [
             'title',
         ]
-        related_models = [User]
+        #related_models = [User]
 
