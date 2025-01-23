@@ -5,8 +5,6 @@ COPY requirements.txt /temp/requirements.txt
 COPY core /core
 WORKDIR /core
 
-RUN chmod +x entrypoint.sh
-
 EXPOSE 8000
 
 RUN apk add --no-cache curl
