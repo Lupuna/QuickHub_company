@@ -109,11 +109,11 @@ class PositionModelTestCase(TestCase):
 
     def test_weight_choices(self):
         correct_choices = [
-            (0, _('Owner')),
-            (1, _('Setting up project parameters')),
-            (2, _('Executing and assigning tasks')),
-            (3, _('Executing tasks')),
-            (4, _('Observer')),
+            (1, _('Owner')),
+            (2, _('Setting up project parameters')),
+            (3, _('Executing and assigning tasks')),
+            (4, _('Executing tasks')),
+            (5, _('Observer')),
         ]
         actual_choices = Position.WeightChoices.choices
         self.assertEqual(actual_choices, correct_choices)
@@ -124,7 +124,8 @@ class PositionModelTestCase(TestCase):
         self.assertEqual(choices, correct_choices)
 
     def test_access_weight_default(self):
-        self.assertEqual(self.position.access_weight, Position.WeightChoices.OWNER)
+        self.assertEqual(self.position.access_weight,
+                         Position.WeightChoices.OWNER)
 
 
 class ProjectPositionTestCase(TestCase):
@@ -212,7 +213,8 @@ class DepartmentTestCase(TestCase):
         self.assertEqual(Department._meta.verbose_name, _("Department"))
 
     def test_meta_verbose_name_plural(self):
-        self.assertEqual(Department._meta.verbose_name_plural, _("Departments"))
+        self.assertEqual(Department._meta.verbose_name_plural,
+                         _("Departments"))
 
     def test_color(self):
         self.assertIsNotNone(self.department.color)
