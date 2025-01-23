@@ -10,7 +10,8 @@ from loguru import logger
 
 class CompanySerializer(UserHandlingMixin, serializers.ModelSerializer):
     users = UserSerializer(many=True)
-    is_remove = serializers.BooleanField(required=False, write_only=True, default=False)
+    is_remove = serializers.BooleanField(
+        required=False, write_only=True, default=False)
 
     class Meta:
         model = Company
@@ -22,10 +23,12 @@ class CompanySerializer(UserHandlingMixin, serializers.ModelSerializer):
             user_emails = [user_data['email'] for user_data in users_data]
 
             existing_users = User.objects.filter(email__in=user_emails)
-            existing_user_emails = set(existing_users.values_list('email', flat=True))
+            existing_user_emails = set(
+                existing_users.values_list('email', flat=True))
             new_user_emails = set(user_emails) - existing_user_emails
             if new_user_emails:
-                User.objects.bulk_create([User(email=email, is_registered=False) for email in new_user_emails])
+                User.objects.bulk_create(
+                    [User(email=email, is_registered=False) for email in new_user_emails])
                 notify_users_created.delay(list(new_user_emails))
                 existing_users = User.objects.filter(email__in=user_emails)
 
@@ -49,7 +52,8 @@ class CompanyForUserSerializer(serializers.ModelSerializer):
 class PositionSerializer(UserHandlingMixin, serializers.ModelSerializer):
     users = UserSerializer(many=True)
     access_weight = serializers.SerializerMethodField()
-    is_remove = serializers.BooleanField(required=False, write_only=True, default=False)
+    is_remove = serializers.BooleanField(
+        required=False, write_only=True, default=False)
 
     class Meta:
         model = Position
@@ -98,18 +102,21 @@ class PositionForProjectSerializer(serializers.ModelSerializer):
 
 class DepartmentSerializer(UserHandlingMixin, serializers.ModelSerializer):
     users = UserSerializer(many=True)
-    is_remove = serializers.BooleanField(required=False, write_only=True, default=False)
+    is_remove = serializers.BooleanField(
+        required=False, write_only=True, default=False)
 
     class Meta:
         model = Department
-        fields = ('id', 'company', 'title', 'description', 'parent', 'users', 'color', 'is_remove', 'owner')
+        fields = ('id', 'company', 'title', 'description',
+                  'parent', 'users', 'color', 'is_remove', 'owner')
 
 
 class DepartmentNoUsersSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Department
-        fields = ('id', 'title', 'description', 'parent', 'company', 'color', 'owner')
+        fields = ('id', 'title', 'description',
+                  'parent', 'company', 'color', 'owner')
 
 
 class DepartmentTitleIdSerializer(serializers.ModelSerializer):
@@ -120,7 +127,8 @@ class DepartmentTitleIdSerializer(serializers.ModelSerializer):
 
 class ProjectSerializer(UserHandlingMixin, serializers.ModelSerializer):
     positions = serializers.SerializerMethodField(read_only=True)
-    is_remove = serializers.BooleanField(required=False, write_only=True, default=False)
+    is_remove = serializers.BooleanField(
+        required=False, write_only=True, default=False)
     departments = DepartmentTitleIdSerializer(many=True, required=False)
     users = UserSerializer(many=True, required=False)
 
@@ -145,20 +153,24 @@ class ProjectSerializer(UserHandlingMixin, serializers.ModelSerializer):
         return result
 
     def update(self, instance, validated_data):
-        departments_ids = [department['id'] for department in validated_data.pop('departments', [])]
+        departments_ids = [department['id']
+                           for department in validated_data.pop('departments', [])]
         departments = Department.objects.filter(id__in=departments_ids)
         instance = super().update(instance, validated_data)
-        instance.departments.add(*(set(departments) - set(instance.departments.all())))
+        instance.departments.add(
+            *(set(departments) - set(instance.departments.all())))
         return instance
 
 
 class ProjectPostSerializer(UserHandlingMixin, serializers.ModelSerializer):
     users = UserSerializer(many=True)
-    is_remove = serializers.BooleanField(required=False, write_only=True, default=False)
+    is_remove = serializers.BooleanField(
+        required=False, write_only=True, default=False)
 
     class Meta:
         model = Project
-        fields = ('id', 'company', 'title', 'description', 'users', 'is_remove')
+        fields = ('id', 'company', 'title',
+                  'description', 'users', 'is_remove')
 
 
 class LinkNoModelSerializer(serializers.Serializer):

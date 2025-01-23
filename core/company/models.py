@@ -24,11 +24,11 @@ class Company(models.Model):
 
 class Position(models.Model):
     class WeightChoices(models.IntegerChoices):
-        OWNER = 0, _('Owner')
-        FULL_ACCESS = 1, _('Setting up project parameters')
-        PARTIAL_ACCESS = 2, _('Executing and assigning tasks')
-        MINIMUM_ACCESS = 3, _('Executing tasks')
-        OBSERVE = 4, _('Observer')
+        OWNER = 1, _('Owner')
+        FULL_ACCESS = 2, _('Setting up project parameters')
+        PARTIAL_ACCESS = 3, _('Executing and assigning tasks')
+        MINIMUM_ACCESS = 4, _('Executing tasks')
+        OBSERVE = 5, _('Observer')
 
     title = models.CharField(max_length=255, default=_('Owner'))
     description = models.TextField(null=True, blank=True)

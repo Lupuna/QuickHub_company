@@ -4,10 +4,12 @@ from rest_framework.request import Request
 
 from company.views import PositionAPIViewSet, ProjectAPIViewSet, CompanyAPIViewSet
 from company.models import Company, Position, Project, Department
-from company.serializers import ProjectPostSerializer, ProjectSerializer
+from company.serializers import ProjectPostSerializer, ProjectSerializer, UserSerializer
 from jwt_registration.models import User
-from .test_base import BaseAPITestCase
+from company.tests.test_base import BaseAPITestCase
 from unittest.mock import patch, MagicMock
+from core.exeptions import TwoCommitsError
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class CompanyAPIViewSetTestCase(BaseAPITestCase):
@@ -115,6 +117,7 @@ class ProjectAPIViewSetTestCase(BaseAPITestCase):
             self.assertEqual(self.view.get_serializer_class(),
                              ProjectSerializer)
 
+
     def test_without_query_params(self):
         kwargs = {'company_pk': self.company.id}
         url = reverse('company-project-list', kwargs=kwargs)
@@ -136,6 +139,32 @@ class ProjectAPIViewSetTestCase(BaseAPITestCase):
         self.assertIn(
             self.user2.email, emails
         )
+        
+    @patch('company.utils.TwoCommitsPattern.two_commits_operation')
+    def test_two_commits_ok(self, mock_two_commits_operation):
+        mock_two_commits_operation.return_value = {'tasks': 200}
+        url = reverse('company-project-list',
+                      kwargs={'company_pk': self.company.id})
+        response = self.client.post(
+            url, {'company': self.company.id, 'title': 'test', 'description': 'a', 'users': [{'email': 'test_email_1@gmail.com'}]}, format='json', HTTP_AUTHORIZATION=f'Bearer {self.token1}')
+        ser = ProjectPostSerializer(data={'company': self.company.id, 'title': 'test', 'description': 'a', 'users': [
+                                    {'email': 'test_email_1@gmail.com'}]})
+        project = Project.objects.get(title='test')
+        ser = ProjectPostSerializer(project)
+        self.assertEqual(response.data, ser.data)
+
+    @patch('company.utils.CreateTwoCommitsPattern._post_request_to_external_api')
+    @patch('company.utils.CreateTwoCommitsPattern._rollback_operation')
+    def test_two_commits_not_ok(self, mock_roll, mock_two_commits_operation):
+        mock_two_commits_operation.return_value = {'tasks': 500}
+
+        url = reverse('company-project-list',
+                      kwargs={'company_pk': self.company.id})
+        response = self.client.post(
+            url, {'company': self.company.id, 'title': 'test', 'description': 'a', 'users': [{'email': 'test_email_1@gmail.com'}]}, format='json', HTTP_AUTHORIZATION=f'Bearer {self.token1}')
+        mock_roll.assert_called_once()
+        self.assertFalse(Project.objects.filter(id=1).exists())
+
 
 
 class UserInCompanyValidateTest(BaseAPITestCase):
@@ -149,12 +178,14 @@ class UserInCompanyValidateTest(BaseAPITestCase):
         data1 = {'email': 'ali@gmail.com'}
         data2 = {'email': 'sdff@gmail.com'}
         response1 = self.client.post(
-            path=reverse('user-in-company', kwargs={'company_pk': self.company.id}),
+            path=reverse('user-in-company',
+                         kwargs={'company_pk': self.company.id}),
             data=data1,
             format='json'
         )
         response2 = self.client.post(
-            path=reverse('user-in-company', kwargs={'company_pk': self.company.id}),
+            path=reverse('user-in-company',
+                         kwargs={'company_pk': self.company.id}),
             data=data2,
             format='json'
         )

@@ -14,7 +14,13 @@ from users.serializers import UserEmailSerializer
 from company.models import Company, Position, Project, Department
 from jwt_registration.models import User
 from users.serializers import OnlyUserEmailSerializer
+
 from company.documents import CompanyDocument, ProjectDocument
+
+from django.db import transaction
+from company.utils import *
+from company.permissions import PermissionCompany, PermissionProject, PermissionDepartment, PermissionPosition
+
 
 
 @extend_schema(
@@ -23,6 +29,7 @@ from company.documents import CompanyDocument, ProjectDocument
 class CompanyAPIViewSet(ModelViewSet):
     serializer_class = CompanySerializer
     queryset = Company.objects.prefetch_related('users').all()
+    permission_classes = [PermissionCompany, ]
 
     def list(self, request):
         if request.query_params:
@@ -50,6 +57,7 @@ class CompanyAPIViewSet(ModelViewSet):
 )
 class PositionAPIViewSet(ModelViewSet):
     serializer_class = PositionSerializer
+    permission_classes = [PermissionPosition, ]
 
     def get_queryset(self):
         return Position.objects.prefetch_related('users').filter(company=self.kwargs['company_pk'])
@@ -60,6 +68,7 @@ class PositionAPIViewSet(ModelViewSet):
 )
 class ProjectAPIViewSet(ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete']
+    permission_classes = [PermissionProject, ]
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -90,12 +99,25 @@ class ProjectAPIViewSet(ModelViewSet):
         )
         return Project.objects.prefetch_related(prefetch_positions, prefetch_departments, 'users').filter(company=company_id)
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            with transaction.atomic():
+                project = serializer.save()
+                create = CreateTwoCommitsPattern(
+                    data={'project': project.id}, service='tasks')
+                create.two_commits_operation()
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response({'error': 'Data is not valid', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
 
 @extend_schema(
     tags=["Department"]
 )
 class DepartmentAPIViewSet(ModelViewSet):
     serializer_class = DepartmentSerializer
+    permission_classes = [PermissionDepartment, ]
 
     def get_queryset(self):
         return Department.objects.prefetch_related('users').filter(company=self.kwargs['company_pk'])
