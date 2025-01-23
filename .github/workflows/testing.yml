@@ -20,6 +20,9 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
+    - name: change mode .sh file
+      run: |
+        chmod +x core/entrypoint.sh
     - name: Run docker-compose
       run: |
         docker compose -f docker-compose.yml build
@@ -31,9 +34,7 @@ jobs:
         docker compose -f docker-compose.yml run --rm web-app sh -c "python manage.py migrate"
     - name: Create Index
       run: |
-        docker compose -f docker-compose.yml run --rm web-app sh -c "python manage.py search_index --rebuild"
+        docker compose -f docker-compose.yml run --rm web-app sh -c "python manage.py search_index --rebuild -f"
     - name: Run Tests
       run: |
-        docker compose -f docker-compose.yml run --rm -d redis
         docker compose -f docker-compose.yml run --rm web-app sh -c "python manage.py test"
-        docker compose -f docker-compose.yml stop redis
