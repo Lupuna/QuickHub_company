@@ -1,5 +1,7 @@
 FROM python:3.12-alpine3.20
 
+RUN chmod +x /core/entrypoint.sh
+
 COPY requirements.txt /temp/requirements.txt
 COPY core /core
 WORKDIR /core
