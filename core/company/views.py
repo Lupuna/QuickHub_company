@@ -22,7 +22,6 @@ from company.utils import *
 from company.permissions import PermissionCompany, PermissionProject, PermissionDepartment, PermissionPosition
 
 
-
 @extend_schema(
     tags=["Company"],
 )

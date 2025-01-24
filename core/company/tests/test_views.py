@@ -1,7 +1,5 @@
 from django.db.models import Prefetch
 from django.urls import reverse
-from rest_framework.request import Request
-
 from company.views import PositionAPIViewSet, ProjectAPIViewSet, CompanyAPIViewSet
 from company.models import Company, Position, Project, Department
 from company.serializers import ProjectPostSerializer, ProjectSerializer, UserSerializer
@@ -43,7 +41,8 @@ class CompanyAPIViewSetTestCase(BaseAPITestCase):
 
     def test_with_query_params(self):
         url = reverse('company-list')
-        response = self.client.get(url, {"email": self.user2.email})
+        response = self.client.get(url, {"email": self.user1.email},
+                                   HTTP_AUTHORIZATION=f"Bearer {self.token1}")
         self.assertEqual(
             len(response.data), 1
         )
@@ -51,7 +50,7 @@ class CompanyAPIViewSetTestCase(BaseAPITestCase):
             item["email"] for item in response.data[0]["users"]
         ]
         self.assertIn(
-            self.user2.email, emails
+            self.user1.email, emails
         )
 
 
@@ -121,7 +120,7 @@ class ProjectAPIViewSetTestCase(BaseAPITestCase):
     def test_without_query_params(self):
         kwargs = {'company_pk': self.company.id}
         url = reverse('company-project-list', kwargs=kwargs)
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token1}")
         self.assertEqual(
             len(response.data), 2
         )
@@ -129,7 +128,8 @@ class ProjectAPIViewSetTestCase(BaseAPITestCase):
     def test_with_query_params(self):
         kwargs = {'company_pk': self.company.id}
         url = reverse('company-project-list', kwargs=kwargs)
-        response = self.client.get(url, {"email": self.user2.email})
+        response = self.client.get(url, {"email": self.user1.email},
+                                   HTTP_AUTHORIZATION=f"Bearer {self.token1}")
         self.assertEqual(
             len(response.data), 1
         )
@@ -137,7 +137,7 @@ class ProjectAPIViewSetTestCase(BaseAPITestCase):
             item["email"] for item in response.data[0]["users"]
         ]
         self.assertIn(
-            self.user2.email, emails
+            self.user1.email, emails
         )
 
     @patch('company.utils.TwoCommitsPattern.two_commits_operation')
@@ -164,7 +164,6 @@ class ProjectAPIViewSetTestCase(BaseAPITestCase):
             url, {'company': self.company.id, 'title': 'test', 'description': 'a', 'users': [{'email': 'test_email_1@gmail.com'}]}, format='json', HTTP_AUTHORIZATION=f'Bearer {self.token1}')
         mock_roll.assert_called_once()
         self.assertFalse(Project.objects.filter(id=1).exists())
-
 
 
 class UserInCompanyValidateTest(BaseAPITestCase):
