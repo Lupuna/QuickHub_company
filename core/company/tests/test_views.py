@@ -32,6 +32,28 @@ class CompanyAPIViewSetTestCase(BaseAPITestCase):
         self.assertTrue(
             all(user['email'] for user in response if user in self.company.users.all()))
 
+    def test_without_query_params(self):
+        url = reverse('company-list')
+        response = self.client.get(url)
+        self.assertEqual(
+            len(response.data), 2
+        )
+
+    def test_with_query_params(self):
+        url = reverse('company-list')
+        response = self.client.get(url, {"email": self.user1.email},
+                                   HTTP_AUTHORIZATION=f"Bearer {self.token1}")
+        self.assertEqual(
+            len(response.data), 1
+        )
+        emails = [
+            item["email"] for item in response.data[0]["users"]
+        ]
+        self.assertIn(
+            self.user1.email, emails
+        )
+
+
 
 class PositionAPIViewSetTestCase(BaseAPITestCase):
 
@@ -93,6 +115,30 @@ class ProjectAPIViewSetTestCase(BaseAPITestCase):
             self.view.setup(request, **kwargs)
             self.assertEqual(self.view.get_serializer_class(),
                              ProjectSerializer)
+
+
+    def test_without_query_params(self):
+        kwargs = {'company_pk': self.company.id}
+        url = reverse('company-project-list', kwargs=kwargs)
+        response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token1}")
+        self.assertEqual(
+            len(response.data), 2
+        )
+
+    def test_with_query_params(self):
+        kwargs = {'company_pk': self.company.id}
+        url = reverse('company-project-list', kwargs=kwargs)
+        response = self.client.get(url, {"email": self.user1.email},
+                                   HTTP_AUTHORIZATION=f"Bearer {self.token1}")
+        self.assertEqual(
+            len(response.data), 1
+        )
+        emails = [
+            item["email"] for item in response.data[0]["users"]
+        ]
+        self.assertIn(
+            self.user1.email, emails
+        )
 
     @patch('company.utils.TwoCommitsPattern.two_commits_operation')
     def test_two_commits_ok(self, mock_two_commits_operation):

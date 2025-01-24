@@ -56,7 +56,9 @@ class PermissionCompanyTestCase(BaseAPITestCase):
             url, HTTP_AUTHORIZATION=f'Bearer {self.token1}')
 
         self.assertEqual(response.status_code, 204)
-        self.assertFalse(Company.objects.all())
+        self.assertEqual(
+            len(Company.objects.all()), 1
+        )
 
     def test_del_forbidden(self):
         url = reverse('company-detail', kwargs={'pk': self.company.id})
@@ -69,11 +71,9 @@ class PermissionCompanyTestCase(BaseAPITestCase):
 
 class PermissionProjectTestCase(BaseAPITestCase):
     def setUp(self):
-        self.project = Project.objects.create(
-            title='test proj', company=self.company)
-        self.project.users.add(self.user1, self.user2)
+        self.project = self.project1
         pos_us_1 = ProjectPosition.objects.filter(
-            position=Position.objects.filter(users__email=self.user1.email)[0])[0]
+            position=self.position)[0]
         pos_us_1.project_access_weight = 1
         pos_us_1.save()
 

@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.generics import GenericAPIView
 from rest_framework import status
+from elasticsearch_dsl import Q
 
 from company.serializers import (
     CompanySerializer, PositionSerializer, DepartmentSerializer,
@@ -13,6 +14,9 @@ from users.serializers import UserEmailSerializer
 from company.models import Company, Position, Project, Department
 from jwt_registration.models import User
 from users.serializers import OnlyUserEmailSerializer
+
+from company.documents import CompanyDocument, ProjectDocument
+
 from django.db import transaction
 from company.utils import *
 from company.permissions import PermissionCompany, PermissionProject, PermissionDepartment, PermissionPosition
@@ -25,6 +29,15 @@ class CompanyAPIViewSet(ModelViewSet):
     serializer_class = CompanySerializer
     queryset = Company.objects.prefetch_related('users').all()
     permission_classes = [PermissionCompany, ]
+
+    def list(self, request):
+        if request.query_params:
+            email = request.query_params["email"]
+            query = Q("nested", path="users", query=Q("match", users__email=email))
+            result = CompanyDocument.search().filter(query).to_queryset()
+            return Response(CompanySerializer(result, many=True).data)
+        else:
+            return super().list(request)
 
     def get_users_for_company(self):
         company = self.kwargs['pk']
@@ -60,6 +73,15 @@ class ProjectAPIViewSet(ModelViewSet):
         if self.request.method == 'POST':
             return ProjectPostSerializer
         return ProjectSerializer
+
+    def list(self, request, *args, **kwargs):
+        if request.query_params:
+            email = request.query_params["email"]
+            query = Q("nested", path="users", query=Q("match", users__email=email))
+            result = ProjectDocument.search().filter(query).to_queryset()
+            return Response(ProjectSerializer(result, many=True).data)
+        else:
+            return super().list(request)
 
     def get_queryset(self):
         company_id = self.kwargs.get('company_pk')

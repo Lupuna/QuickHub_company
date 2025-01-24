@@ -5,6 +5,8 @@ COPY core /core
 WORKDIR /core
 EXPOSE 8000
 
+RUN apk add --no-cache curl
+
 RUN apk add postgresql-client build-base postgresql-dev
 
 RUN pip install -r /temp/requirements.txt

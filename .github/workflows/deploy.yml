@@ -21,3 +21,4 @@ jobs:
             git pull origin master
             docker compose -f docker-compose-build.yml up --build -d
             docker compose -f docker-compose-build.yml exec web-app python manage.py migrate
+            docker compose -f docker-compose-build.yml exec web-app python manage.py search_index --rebuild -f
